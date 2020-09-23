@@ -1,6 +1,12 @@
 using SnowyOwl
 using Test
 
+tests = [
+    "io"
+]
+
 @testset "SnowyOwl.jl" begin
-    # Write your tests here.
+    for t in tests
+        include("$(t).jl")
+    end
 end
