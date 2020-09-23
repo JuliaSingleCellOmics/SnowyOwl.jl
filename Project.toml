@@ -1,0 +1,13 @@
+name = "SnowyOwl"
+uuid = "c5d12a1c-ebca-44e1-aaa9-03f0dbaa929f"
+authors = ["Yueh-Hua Tu"]
+version = "0.1.0"
+
+[compat]
+julia = "1.5"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
