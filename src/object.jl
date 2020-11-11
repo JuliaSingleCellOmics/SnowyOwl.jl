@@ -1,14 +1,15 @@
-mutable struct Profile{T<:AbstractMatrix}
+mutable struct Profile{T<:AbstractMatrix,S<:AbstractMatrix}
     data::T
     obs::DataFrame
     var::DataFrame
+    layers::Dict{Symbol,S}
     pipeline::OrderedDict
 
     function Profile(data::T, obs::DataFrame, var::DataFrame) where {T<:AbstractMatrix}
         r, c = size(data)
         @assert nrow(obs) == c
         @assert nrow(var) == r
-        new{T}(data, obs, var, OrderedDict{Symbol,Dict}())
+        new{T,S}(data, obs, var, Dict{Symbol,Matrix}(), OrderedDict{Symbol,Dict}())
     end
 end
 
