@@ -9,7 +9,7 @@ mutable struct Profile{T<:AbstractMatrix,S<:AbstractMatrix}
         r, c = size(data)
         @assert nrow(obs) == c
         @assert nrow(var) == r
-        new{T,S}(data, obs, var, Dict{Symbol,Matrix}(), OrderedDict{Symbol,Dict}())
+        new{T,Matrix}(data, obs, var, Dict{Symbol,Matrix}(), OrderedDict{Symbol,Dict}())
     end
 end
 
