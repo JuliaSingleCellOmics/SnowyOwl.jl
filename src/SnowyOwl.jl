@@ -20,6 +20,7 @@ export
     Profile,
     obsnames,
     varnames,
+    layernames,
     nrow,
     ncol,
 
