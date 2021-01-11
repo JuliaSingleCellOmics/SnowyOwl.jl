@@ -1,7 +1,9 @@
 using SnowyOwl
+using DataFrames
 using Test
 
 tests = [
+    "object",
     "io"
 ]
 

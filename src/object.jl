@@ -29,3 +29,17 @@ end
 
 Base.maximum(p::Profile) = maximum(p.data)
 Base.minimum(p::Profile) = minimum(p.data)
+
+Base.size(p::Profile) = size(p.data)
+Base.axes(p::Profile) = axes(p.data)
+
+function Base.getindex(p::Profile, inds...)
+    p_ = Profile(getindex(p.data, inds...),
+                 getindex(p.obs, inds[2], :),
+                 getindex(p.var, inds[1], :))
+    for (k, v) in p.layers
+        p_.layers[k] = getindex(v, inds...)
+    end
+    p_.pipeline = copy(p.pipeline)
+    p_
+end
