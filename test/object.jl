@@ -10,6 +10,8 @@
     @test varnames(prof) == ["C", "D"]
     @test nrow(prof) == r
     @test ncol(prof) == c
+    @test nvar(prof) == r
+    @test nobs(prof) == c
     @test maximum(prof) == 1
     @test minimum(prof) == 0
     @test size(prof) == (r, c)

@@ -18,6 +18,8 @@ varnames(p::Profile) = names(p.var)
 layernames(p::Profile) = keys(p.layers)
 nrow(p::Profile) = size(p.data, 1)
 ncol(p::Profile) = size(p.data, 2)
+nvar(p::Profile) = size(p.data, 1)
+nobs(p::Profile) = size(p.data, 2)
 
 function Base.show(io::IO, p::Profile)
     println(io, "Profile(n_var × n_obs = ", nrow(p), " × ", ncol(p), ")")
