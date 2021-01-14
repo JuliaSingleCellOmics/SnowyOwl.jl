@@ -27,6 +27,12 @@ cache:
   directories:
     - ~/.julia/artifacts
 
+script:
+ - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+ - julia --project -e 'using Pkg; Pkg.add("PyCall"); Pkg.instantiate(); ENV["PYTHON"] = ""; Pkg.build(); using PyCall; pyimport_conda("scipy", "scipy")'
+ - julia --project -e 'using PyCall; pyimport_conda("scipy", "scipy")' # retry
+ - julia --project -e 'using Pkg; Pkg.test(; coverage=true)';
+
 jobs:
   allow_failures:
     - julia: nightly
