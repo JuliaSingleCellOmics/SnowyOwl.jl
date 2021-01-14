@@ -21,4 +21,6 @@
     idx = rand([false,true], r)
     prof3 = prof[idx, :]
     @test prof3.data == prof.data[idx, :]
+    @test prof3.obs == prof.obs
+    @test prof3.var == prof.var[idx, :]
 end
