@@ -4,13 +4,13 @@ mutable struct Profile{T<:AbstractMatrix,S<:AbstractMatrix}
     var::DataFrame
     layers::Dict{Symbol,S}
     pipeline::OrderedDict
+end
 
-    function Profile(data::T, obs::DataFrame, var::DataFrame) where {T<:AbstractMatrix}
-        r, c = size(data)
-        @assert nrow(obs) == c
-        @assert nrow(var) == r
-        new{T,Matrix}(data, obs, var, Dict{Symbol,Matrix}(), OrderedDict{Symbol,Dict}())
-    end
+function Profile(data::T, obs::DataFrame, var::DataFrame) where {T<:AbstractMatrix}
+    r, c = size(data)
+    @assert nrow(obs) == c
+    @assert nrow(var) == r
+    Profile{T,Matrix}(data, obs, var, Dict{Symbol,Matrix}(), OrderedDict{Symbol,Dict}())
 end
 
 obsnames(p::Profile) = names(p.obs)
@@ -44,4 +44,17 @@ function Base.getindex(p::Profile, inds...)
     end
     p_.pipeline = copy(p.pipeline)
     p_
+end
+
+Base.setproperty!(prof::Profile, name::Symbol, x) = setproperty!(prof, Val(name), x)
+Base.setproperty!(prof::Profile, ::Val{S}, x) where S = setfield!(prof, S, x)
+
+function Base.setproperty!(prof::Profile, ::Val{:obs}, x)
+    @assert nrow(x) == size(prof.data, 2)
+    setfield!(prof, :obs, x)
+end
+
+function Base.setproperty!(prof::Profile, ::Val{:var}, x)
+    @assert nrow(x) == size(prof.data, 1)
+    setfield!(prof, :var, x)
 end

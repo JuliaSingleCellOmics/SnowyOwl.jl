@@ -16,6 +16,8 @@
     @test minimum(prof) == 0
     @test size(prof) == (r, c)
     @test axes(prof) == (Base.OneTo(r), Base.OneTo(c))
+    @test_throws AssertionError prof.obs = var
+    @test_throws AssertionError prof.var = obs
 
     prof2 = prof[1:50, :]
     @test prof2.data == prof.data[1:50, :]
