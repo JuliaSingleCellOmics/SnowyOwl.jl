@@ -23,6 +23,8 @@ export
     layernames,
     nrow,
     ncol,
+    nvar,
+    nobs,
 
     # datasets
     load_pbmc68k,

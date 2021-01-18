@@ -4,7 +4,7 @@ using Test
 
 tests = [
     "object",
-    "io"
+    # "io"
 ]
 
 @testset "SnowyOwl.jl" begin
