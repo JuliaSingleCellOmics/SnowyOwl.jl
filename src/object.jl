@@ -6,7 +6,7 @@ mutable struct Profile{T<:AbstractMatrix,S<:AbstractMatrix}
     pipeline::OrderedDict
 end
 
-function Profile(data::T, obs::DataFrame, var::DataFrame) where {T<:AbstractMatrix}
+function Profile(data::T, var::DataFrame, obs::DataFrame) where {T<:AbstractMatrix}
     r, c = size(data)
     @assert nrow(obs) == c
     @assert nrow(var) == r
@@ -36,11 +36,11 @@ Base.size(p::Profile) = size(p.data)
 Base.axes(p::Profile) = axes(p.data)
 
 function Base.getindex(p::Profile, inds...)
-    p_ = Profile(getindex(p.data, inds...),
-                 getindex(p.obs, inds[2], :),
-                 getindex(p.var, inds[1], :))
+    p_ = Profile(getindex(p.data, inds[2], inds[1]),
+                 getindex(p.var, inds[2], :),
+                 getindex(p.obs, inds[1], :))
     for (k, v) in p.layers
-        p_.layers[k] = getindex(v, inds...)
+        p_.layers[k] = getindex(v, inds[2], inds[1])
     end
     p_.pipeline = copy(p.pipeline)
     p_
