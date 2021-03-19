@@ -1,3 +1,8 @@
+using PyCall
+using CSV
+using CodecZlib, Mmap
+using JLD2
+
 const DEFAULT_FEATURE_COLS = [:ensembleid, :genesymbol, :type]
 const DEFAULT_BARCODE_COLS = [:barcode]
 const FEATURE_COLS = [:featurekey, :featurename, :featuretype, :chromosome, :featurestart, :featureend, :isgene, :genus_species]

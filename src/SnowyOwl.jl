@@ -1,12 +1,7 @@
 module SnowyOwl
 
-using DataStructures: OrderedDict
 using SparseArrays
-using PyCall
-using CSV, DataFrames, CodecZlib, Mmap
-using JLD2
-
-import DataFrames: nrow, ncol
+using DataFrames
 
 export
     # io
@@ -31,7 +26,12 @@ export
 
     # filter
     filter_cells!,
-    filter_genes!
+    filter_genes!,
+
+    # model
+    unspliced,
+    spliced,
+    mRNA
 
 include("io.jl")
 include("object.jl")
