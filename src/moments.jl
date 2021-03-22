@@ -1,6 +1,8 @@
 using LinearAlgebra: diagm
 
 normalize_indicator(i::AbstractArray) = i ./ sum(i)
+normalize_indicator(i::AbstractArray, dims) = i ./ sum(i, dims=dims)
+
 to_indicator_matrix(i::AbstractVector) = diagm(i)
 
 function normalize_neighbors(C::AbstractMatrix)
