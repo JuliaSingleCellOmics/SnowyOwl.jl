@@ -31,12 +31,17 @@ export
     # model
     unspliced,
     spliced,
-    mRNA
+    mRNA,
+
+    #moments
+    normalize_indicator,
+    to_indicator_matrix
 
 include("io.jl")
 include("object.jl")
 include("datasets.jl")
 include("filter.jl")
 include("model.jl")
+include("moments.jl")
 
 end
