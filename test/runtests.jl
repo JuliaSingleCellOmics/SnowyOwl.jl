@@ -1,5 +1,6 @@
 using SnowyOwl
 using DataFrames
+using LinearAlgebra
 using Test
 
 tests = [
