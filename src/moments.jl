@@ -1,4 +1,5 @@
 using LinearAlgebra: diagm
+using SparseArrays: sparse
 
 normalize_indicator(i::AbstractArray) = i ./ sum(i)
 normalize_indicator(i::AbstractArray, dims) = i ./ sum(i, dims=dims)
@@ -26,19 +27,19 @@ which is the mean operator. If `order=2`, generates a second moment graph filter
 """
 function graph_filter(ind::AbstractVector, order::Integer)
     if order == 1
-        return normalize_indicator(ind)
+        return sparse(normalize_indicator(ind))
     elseif order == 2
         adj = to_indicator_matrix(ind)
-        union_diagonal!(adj)
-        return normalize_indicator(adj)
+        return sparse(normalize_indicator(adj))
     else
         throw(ArgumentError("order other than 1 and 2 is not supported while get $order."))
     end
 end
 
-function graph_filter(adj::AbstractMatrix, order::Integer; dims::Integer=1)
+function graph_filter(adj::AbstractMatrix, order::Integer; dims::Integer=1, self::Bool=true)
     if order == 1
-        return normalize_indicator(adj, dims)
+        self && union_diagonal!(adj)
+        return sparse(normalize_indicator(adj, dims))
     elseif order == 2
         n = dims%2 + 1
         blocks = [graph_filter(vec(adj[_generate_slices(n, k)...]), 2) for k in 1:size(adj, n)]

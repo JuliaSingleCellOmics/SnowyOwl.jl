@@ -1,6 +1,7 @@
 using SnowyOwl
 using DataFrames
 using LinearAlgebra
+using SparseArrays
 using Test
 
 tests = [
