@@ -9,4 +9,6 @@
 
     Ind = rand([0,1], 10, 10)
     @test sum(normalize_indicator(Ind, 2), dims=2) ≈ ones(Int64, 10)
+
+    @test diag(union_diagonal!(Ind)) == ones(Int64, 10)
 end

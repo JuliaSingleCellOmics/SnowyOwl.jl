@@ -5,11 +5,16 @@ normalize_indicator(i::AbstractArray, dims) = i ./ sum(i, dims=dims)
 
 to_indicator_matrix(i::AbstractVector) = diagm(i)
 
+function union_diagonal!(A::AbstractMatrix{T}) where {T}
+    for i in 1:min(size(A)...)
+        A[i, i] = one(T)
+    end
+    return A
+end
+
 function normalize_neighbors(C::AbstractMatrix)
     neighbor_graph = C .> 0
-    for i in 1:min(size(neighbor_graph)...)
-        neighbor_graph[i, i] = true
-    end
+    union_diagonal!(neighbor_graph)
     neighbor_graph ./= sum(neighbor_graph, dims=2)
     return neighbor_graph
 end

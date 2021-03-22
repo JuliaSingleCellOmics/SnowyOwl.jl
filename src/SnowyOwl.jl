@@ -35,7 +35,8 @@ export
 
     #moments
     normalize_indicator,
-    to_indicator_matrix
+    to_indicator_matrix,
+    union_diagonal!
 
 include("io.jl")
 include("object.jl")
