@@ -37,7 +37,10 @@ export
     normalize_indicator,
     to_indicator_matrix,
     union_diagonal!,
-    graph_filter
+    graph_filter,
+    moment,
+    first_moment,
+    second_moment
 
 include("io.jl")
 include("object.jl")

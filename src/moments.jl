@@ -49,27 +49,41 @@ function graph_filter(adj::AbstractMatrix, order::Integer; dims::Integer=1, self
     end
 end
 
-function normalize_neighbors(C::AbstractMatrix)
-    neighbor_graph = C .> 0
-    union_diagonal!(neighbor_graph)
-    neighbor_graph .= normalize_indicator(neighbor_graph, 2)
-    return neighbor_graph
-end
-
-function moment(A::AbstractArray, order::Integer)
+function moment(A::AbstractMatrix, X::AbstractMatrix, order::Integer; dims::Integer=1)
     if order == 1
-        return first_moment(A)
+        return first_moment(A, X; dims=dims)
     elseif order == 2
-        return second_moment(A)
+        return second_moment(A, X; dims=dims)
     else
         throw(ArgumentError("order other than 1 and 2 is not supported while get $order."))
     end
 end
 
-function first_moment(A::AbstractArray)
-    
+function first_moment(A::AbstractMatrix, X::AbstractMatrix; dims::Integer=1)
+    adj = A .> 0
+    if dims == 1
+        G = graph_filter(adj, 1; dims=1)
+        return G*sparse(X)
+    elseif dims == 2
+        G = graph_filter(adj, 1; dims=2)
+        return sparse(X)*G
+    else
+        throw(ArgumentError("dims other than 1 and 2 is not supported while get $dims."))
+    end
 end
 
-function second_moment(A::AbstractArray)
-    
+second_moment(A::AbstractMatrix, X::AbstractMatrix; dims::Integer=1) = second_moment(A, X, X; dims=dims)
+
+function second_moment(A::AbstractMatrix, X::AbstractMatrix, Y::AbstractMatrix; dims::Integer=1)
+    # x' * G_2 * y - (G_1' * x)*(G_1' * y)
+    adj = A .> 0
+    if dims == 1
+        G = graph_filter(adj, 2; dims=1)
+        return vec(X)'*G*vec(Y) - first_moment(A, X; dims=1)*first_moment(A, Y; dims=1)
+    elseif dims == 2
+        G = graph_filter(adj, 2; dims=2)
+        return vec(X')'*G*vec(Y') - first_moment(A, X; dims=2)*first_moment(A, Y; dims=2)
+    else
+        throw(ArgumentError("dims other than 1 and 2 is not supported while get $dims."))
+    end
 end
