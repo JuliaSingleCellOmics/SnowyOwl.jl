@@ -43,4 +43,11 @@
 
     blocks = [diagm([1, 0, 0]), diagm([1/2, 0, 1/2]), diagm([1/3, 1/3, 1/3])]
     @test graph_filter(adj, 2, dims=2) == cat(blocks...,dims=(1,2))
+
+    A = rand([0,1], 5, 5)
+    X = rand(5, 10)
+    @test size(moment(A, X, 1, dims=1)) == size(X)
+    @test size(moment(A, Matrix(X'), 1, dims=2)) == size(X')
+    # @test size(moment(A, X, 2, dims=1)) == (size(X, 1), 5*10)
+    # @test size(moment(A, Matrix(X'), 2, dims=2)) == (5*10, size(X, 1))
 end

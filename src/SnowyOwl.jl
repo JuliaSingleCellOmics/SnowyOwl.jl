@@ -39,8 +39,7 @@ export
     union_diagonal!,
     graph_filter,
     moment,
-    first_moment,
-    second_moment
+    first_moment
 
 include("io.jl")
 include("object.jl")

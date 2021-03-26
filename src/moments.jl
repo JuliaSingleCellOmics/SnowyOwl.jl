@@ -63,27 +63,27 @@ function first_moment(A::AbstractMatrix, X::AbstractMatrix; dims::Integer=1)
     adj = A .> 0
     if dims == 1
         G = graph_filter(adj, 1; dims=1)
-        return G*sparse(X)
+        return G*X
     elseif dims == 2
         G = graph_filter(adj, 1; dims=2)
-        return sparse(X)*G
+        return X*G
     else
         throw(ArgumentError("dims other than 1 and 2 is not supported while get $dims."))
     end
 end
 
-second_moment(A::AbstractMatrix, X::AbstractMatrix; dims::Integer=1) = second_moment(A, X, X; dims=dims)
+# second_moment(A::AbstractMatrix, X::AbstractMatrix; dims::Integer=1) = second_moment(A, X, X; dims=dims)
 
-function second_moment(A::AbstractMatrix, X::AbstractMatrix, Y::AbstractMatrix; dims::Integer=1)
-    # x' * G_2 * y - (G_1' * x)*(G_1' * y)
-    adj = A .> 0
-    if dims == 1
-        G = graph_filter(adj, 2; dims=1)
-        return vec(X)'*G*vec(Y) - first_moment(A, X; dims=1)*first_moment(A, Y; dims=1)
-    elseif dims == 2
-        G = graph_filter(adj, 2; dims=2)
-        return vec(X')'*G*vec(Y') - first_moment(A, X; dims=2)*first_moment(A, Y; dims=2)
-    else
-        throw(ArgumentError("dims other than 1 and 2 is not supported while get $dims."))
-    end
-end
+# function second_moment(A::AbstractMatrix, X::AbstractMatrix, Y::AbstractMatrix; dims::Integer=1)
+#     # x' * G_2 * y - (G_1' * x)*(G_1' * y)
+#     adj = A .> 0
+#     if dims == 1
+#         G = graph_filter(adj, 2; dims=1)
+#         return X'*G*Y - first_moment(A, X; dims=1)*first_moment(A, Y; dims=1)'
+#     elseif dims == 2
+#         G = graph_filter(adj, 2; dims=2)
+#         return vec(X')'*G*vec(Y') - first_moment(A, X; dims=2)*first_moment(A, Y; dims=2)'
+#     else
+#         throw(ArgumentError("dims other than 1 and 2 is not supported while get $dims."))
+#     end
+# end
