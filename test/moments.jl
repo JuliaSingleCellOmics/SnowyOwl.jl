@@ -38,6 +38,9 @@
     @test sum(G, dims=2) ≈ ones(Int64, 10)
 
     adj = [1 0 0; 1 0 1; 1 1 1]
+    blocks = [diagm([1/3, 1/3, 1/3]), diagm([0, 0, 1]), diagm([0, 1/2, 1/2])]
+    @test graph_filter(adj, 2, dims=1) == cat(blocks...,dims=(1,2))
+
     blocks = [diagm([1, 0, 0]), diagm([1/2, 0, 1/2]), diagm([1/3, 1/3, 1/3])]
-    # @test graph_filter(adj, 2, dims=2) == cat(blocks...,dims=(1,2))
+    @test graph_filter(adj, 2, dims=2) == cat(blocks...,dims=(1,2))
 end
