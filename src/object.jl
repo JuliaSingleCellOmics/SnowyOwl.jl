@@ -1,3 +1,7 @@
+using DataStructures: OrderedDict
+
+import DataFrames: nrow, ncol
+
 mutable struct Profile{T<:AbstractMatrix,S<:AbstractMatrix}
     data::T
     obs::DataFrame
