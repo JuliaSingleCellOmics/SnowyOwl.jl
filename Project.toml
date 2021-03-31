@@ -1,6 +1,6 @@
 name = "SnowyOwl"
 uuid = "c5d12a1c-ebca-44e1-aaa9-03f0dbaa929f"
-authors = ["Yueh-Hua Tu"]
+authors = ["Yueh-Hua Tu <a504082002@gmail.com>"]
 version = "0.1.0"
 
 [deps]
