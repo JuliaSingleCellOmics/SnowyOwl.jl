@@ -13,6 +13,8 @@ tests = [
     "qc",
     "highly_variable",
     "moments",
+    # "neighbors",
+    "utils"
 ]
 
 @testset "SnowyOwl.jl" begin

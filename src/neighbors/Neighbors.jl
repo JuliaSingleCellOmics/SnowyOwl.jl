@@ -3,6 +3,8 @@ module Neighbors
 using SparseArrays
 using LinearAlgebra
 
+using Distances
+
 export
     #moments
     normalize_indicator,

@@ -1,5 +1,3 @@
-using Distances
-
 # use_highly_variable=True,
 # metric_kwds=None,
 # num_threads=-1,
