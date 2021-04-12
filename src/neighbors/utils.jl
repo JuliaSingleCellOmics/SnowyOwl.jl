@@ -4,13 +4,17 @@ function argsort(x::AbstractVector)
 end
 
 function argsort(X::AbstractMatrix; dims=1)
+    res = similar(X, Int)
     if dims == 1
-        idxs = [argsort(view(X, :, j)) for j = 1:size(X,2)]
-        return hcat(idxs...)
+        for j = 1:size(X,2)
+            view(res, :, j) .= argsort(view(X, :, j))
+        end
     elseif dims == 2
-        idxs = [argsort(view(X, i, :))' for i = 1:size(X,1)]
-        return vcat(idxs...)
+        for i = 1:size(X,1)
+            view(res, i, :) .= argsort(view(X, i, :))
+        end
     else
         throw(ArgumentError("Invalid dims, dims only accepts 1 or 2."))
     end
+    return res
 end
