@@ -1,5 +1,3 @@
-using StatsBase
-
 function argsort(x::AbstractVector)
     rank = StatsBase.ordinalrank(x)
     invpermute!(collect(1:length(x)), rank)

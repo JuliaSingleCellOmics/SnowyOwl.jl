@@ -13,7 +13,7 @@ tests = [
     "qc",
     "highly_variable",
     "moments",
-    # "neighbors",
+    "neighbors",
     "utils"
 ]
 

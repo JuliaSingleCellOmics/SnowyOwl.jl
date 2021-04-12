@@ -4,6 +4,9 @@ using SparseArrays
 using LinearAlgebra
 
 using Distances
+using Graphs
+using NearestNeighborDescent
+using StatsBase
 
 export
     #moments
@@ -12,10 +15,14 @@ export
     union_diagonal!,
     graph_filter,
     moment,
-    first_moment
+    first_moment,
 
-# neighborhood_graph!()
+    # neighbors
+    neighborhood_graph
 
+
+include("utils.jl")
 include("moments.jl")
+include("neighbors.jl")
 
 end
