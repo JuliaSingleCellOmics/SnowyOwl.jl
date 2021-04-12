@@ -5,8 +5,8 @@ using SparseArrays
 using DataFrames
 using Distributions
 using StatsBase
+using Distances
 using Test
-using OmicsProfiles
 
 tests = [
     # "filter",

@@ -1,7 +1,3 @@
-# metric_kwds=None,
-# num_threads=-1,
-
-
 # neighbors = Neighbors(adata)
 # neighbors.compute_neighbors(
 #     n_pcs = None if use_rep == "X" else n_pcs,
@@ -22,85 +18,93 @@
 #     # adata.uns["neighbors"]["distances_key"] = "distances"
 # end
 
-# function neighborhood_graph(X::AbstractMatrix, n_neighbors::Integer=30, method=:umap; use_knn=True, metric::Metric=Euclidean())
-#     @assert method == :umap && use_knn "UMAP method supports only use_knn=true."
-#     @assert method in (:umap, :gaussian) "Unsupported method of $method, only support (:umap, :gaussian)."
+"""
+https://github.com/theislab/scanpy/blob/c488909a54e9ab1462186cca35b537426e4630db/scanpy/neighbors/__init__.py#L720
+"""
+function neighborhood_graph(X::AbstractMatrix, n_neighbors::Integer=30, method=:umap; use_knn=True, metric::Metric=Euclidean())
+    @assert method == :umap && use_knn "UMAP method supports only use_knn=true."
+    @assert method in (:umap, :gaussian) "Unsupported method of $method, only support (:umap, :gaussian)."
 
-#     use_dense_distance = (metric isa Euclidean && X.shape[0] < 8192) || !use_knn
-#     neighbor_search(X, n_neighbors, metric, Val(use_dense_distance))
+    use_dense_distance = (metric isa Euclidean && size(X,2) < 8192) || !use_knn
+    neighbor_search(X, n_neighbors, metric, Val(use_dense_distance))
 
-#     if !use_dense_distance
-#         # we need self._distances also for method == 'gauss' if we didn't use dense distances
-#         self._distances, self._connectivities = compute_connectivities(X, Val(:umap), graph)
-#         # knn_indices,
-#         # knn_distances,
-#         # self._adata.shape[0],
-#         # self.n_neighbors
-#     else
-#         self._distances, self._connectivities = compute_connectivities(X, Val(method), graph)
-#     end
+    # if !use_dense_distance
+    #     # we need self._distances also for method == 'gauss' if we didn't use dense distances
+    #     self._distances, self._connectivities = compute_connectivities(X, Val(:umap), graph)
+    #     # knn_indices,
+    #     # knn_distances,
+    #     # self._adata.shape[0],
+    #     # self.n_neighbors
+    # else
+    #     self._distances, self._connectivities = compute_connectivities(X, Val(method), graph)
+    # end
 
-#     self._number_connected_components = connected_components(connectivities)
-# end
+    # self._number_connected_components = connected_components(connectivities)
+end
 
-# function neighbor_search(X::AbstractMatrix, n_neighbors, metric::Metric, use_dense_distance::Val{true})
-#     graph = nndescent(X, n_neighbors, metric)
-#     indices, distances = knn_matrices(graph)
+"""
+exact knn graph
+https://github.com/theislab/scanpy/blob/c488909a54e9ab1462186cca35b537426e4630db/scanpy/neighbors/__init__.py#L773
+"""
+function neighbor_search(X::AbstractMatrix, n_neighbors, metric::Metric, use_dense_distance::Val{true})
+    graph = nndescent(X, n_neighbors, metric)
+    indices, distances = knn_matrices(graph)
 
-#     dist = pairwise(metric, X, dims=2)
-#     self._distances = use_knn ? sparse(dist, n_neighbors) : dist
-#     return dist
-# end
+    dist = pairwise(metric, X, dims=2)
+    use_knn && (dist = sparse(dist, n_neighbors))
+    return dist
+end
 
-# function neighbor_search(X::AbstractMatrix, n_neighbors, metric::Metric, use_dense_distance::Val{false})
-#     # approximate nearest neighbors for non-euclidean case
-#     if X.shape[0] < 4096
-#         X = pairwise_distances(X, metric=metric)
-#         metric = "precomputed"
-#     end
-#     # knn_indices, knn_distances, forest = compute_neighbors_umap(X, n_neighbors, random_state, metric=metric, metric_kwds=metric_kwds)
-#     knn_indices, knn_distances, forest = neighborhood_graph(X, Val(:umap), n_neighbors, metric)
+"""
+approximate knn graph
+https://github.com/theislab/scanpy/blob/c488909a54e9ab1462186cca35b537426e4630db/scanpy/neighbors/__init__.py#L786
+# approximate nearest neighbors for non-euclidean case
+"""
+function neighbor_search(X::AbstractMatrix, n_neighbors, metric::Metric, use_dense_distance::Val{false})
+    if size(X, 2) < 4096
+        X = pairwise(metric, X, dims=2)
+        knn_indices, knn_distances = knn_graph(X, Val(:precomputed), n_neighbors)
+    else
+        knn_indices, knn_distances = knn_graph(X, metric, n_neighbors)
+    end
+    return dist
+end
 
-#     return dist
-# end
-
-function neighborhood_graph(X::AbstractMatrix{T}, method::Val{:umap}, metric::Val{:precomputed}, n_neighbors::Integer=30) where T
-    # TODO: need to consider column major
+"""
+https://github.com/lmcinnes/umap/blob/ae5255be571c4a90bd93611a07612b4565c7984d/umap/umap_.py#L310
+"""
+function knn_graph(X::AbstractMatrix{T}, metric::Val{:precomputed}, n_neighbors::Integer=30) where T
     # Compute indices of n nearest neighbors
-    knn_indices = SnowyOwl.argsort(X, dims=2)[:, 1:n_neighbors]
+    knn_indices = SnowyOwl.argsort(X, dims=1)[2:(n_neighbors+1), :]
     # Compute the nearest neighbor distances
-    knn_dists = sort(X, dims=2)[:, 1:n_neighbors]
+    knn_dists = sort(X, dims=1)[2:(n_neighbors+1), :]
     # Prune any nearest neighbours that are infinite distance apart.
     knn_dists[isinf.(knn_dists)] .= -one(T)
 
     return knn_indices, knn_dists
 end
 
-# function neighborhood_graph(X::AbstractMatrix, method::Val{:umap}, n_neighbors::Integer=30, metric::Metric=Euclidean())
-#     #     random_state=random_state,
-#     #     metric_kwds=metric_kwds,
-#     #     angular=angular,
+# """
+# https://github.com/lmcinnes/umap/blob/ae5255be571c4a90bd93611a07612b4565c7984d/umap/umap_.py#L323
+# """
+# function knn_graph(X::AbstractMatrix, metric::Metric=Euclidean(), n_neighbors::Integer=30)
+#     n_obs = size(X, 2)
 
-#     n_trees = min(64, 5 + int(round((X.shape[0]) ** 0.5 / 20.0)))
-#     n_iters = max(5, int(round(np.log2(X.shape[0]))))
+#     n_trees = min(64, 5 + int(round(n_obs^0.5 / 20.0)))
+#     n_iters = max(5, round(Int, log2(n_obs)))
 
 #     knn_search_index = NNDescent(
 #         X,
 #         n_neighbors=n_neighbors,
 #         metric=metric,
-#         metric_kwds=metric_kwds,
-#         random_state=random_state,
 #         n_trees=n_trees,
 #         n_iters=n_iters,
 #         max_candidates=60,
 #         low_memory=low_memory,
-#         n_jobs=n_jobs,
-#         verbose=verbose,
 #     )
 #     knn_indices, knn_dists = knn_search_index.neighbor_graph
 
-
-#     # return knn_indices, knn_dists, forest
+#     return knn_indices, knn_dists
 # end
 
 # function compute_connectivities(X::AbstractMatrix, method::Val{:umap}, graph)
