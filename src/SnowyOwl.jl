@@ -44,7 +44,7 @@ export
 include("io.jl")
 include("object.jl")
 include("datasets.jl")
-include("filter.jl")
+include("preprocess/filter.jl")
 include("model.jl")
 include("moments.jl")
 
