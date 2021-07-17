@@ -4,8 +4,8 @@ import DataFrames: nrow, ncol
 
 mutable struct Profile{T<:AbstractMatrix,S<:AbstractMatrix}
     data::T
-    obs::DataFrame
     var::DataFrame
+    obs::DataFrame
     layers::Dict{Symbol,S}
     pipeline::OrderedDict
 end
@@ -14,7 +14,7 @@ function Profile(data::T, var::DataFrame, obs::DataFrame) where {T<:AbstractMatr
     r, c = size(data)
     @assert nrow(obs) == c
     @assert nrow(var) == r
-    Profile{T,Matrix}(data, obs, var, Dict{Symbol,Matrix}(), OrderedDict{Symbol,Dict}())
+    Profile{T,Matrix}(data, var, obs, Dict{Symbol,Matrix}(), OrderedDict{Symbol,Dict}())
 end
 
 obsnames(p::Profile) = names(p.obs)
@@ -32,6 +32,8 @@ function Base.show(io::IO, p::Profile)
     isempty(p.layers) || println(io, "    layers: ", join(layernames(p), ", "))
     isempty(p.pipeline) || println(io, "    pipeline: ", join(keys(p.pipeline), ", "))
 end
+
+Base.copy(p::Profile) = Profile(copy(p.data), copy(p.var), copy(p.obs), copy(p.layers), copy(p.pipeline))
 
 Base.maximum(p::Profile) = maximum(p.data)
 Base.minimum(p::Profile) = minimum(p.data)

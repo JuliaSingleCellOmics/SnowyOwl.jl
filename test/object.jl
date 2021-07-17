@@ -19,6 +19,11 @@
     @test_throws AssertionError prof.obs = var
     @test_throws AssertionError prof.var = obs
 
+    prof2 = copy(prof)
+    @test prof.data == prof2.data
+    @test prof.var == prof2.var
+    @test prof.obs == prof2.obs
+
     prof2 = prof[1:50, :]
     @test prof2.data == prof.data[:, 1:50]
 
