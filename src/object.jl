@@ -64,3 +64,13 @@ function Base.setproperty!(prof::Profile, ::Val{:var}, x)
     @assert nrow(x) == size(prof.data, 1)
     setfield!(prof, :var, x)
 end
+
+Base.filter(x::Pair{Symbol,T}, prof::Profile) where {T} = filter!(x, copy(prof))
+
+function Base.filter!(x::Pair{Symbol,T}, prof::Profile) where {T}
+    col, f = x
+    sel = f.(prof.var[:,col])
+    filter!(x, prof.var)
+    prof.data = prof.data[sel, :]
+    prof
+end
