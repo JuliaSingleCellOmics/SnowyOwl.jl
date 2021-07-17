@@ -20,10 +20,17 @@
     @test_throws AssertionError prof.var = obs
 
     prof2 = copy(prof)
+    @test prof2 !== prof
     @test prof.data == prof2.data
     @test prof.var == prof2.var
     @test prof.obs == prof2.obs
     
+    prof2 = filter(:C => x -> x > 0, prof)
+    @test prof2 !== prof
+    @test prof2.var == prof.var[prof.var.C .> 0, :]
+    @test prof2.data == prof.data[prof.var.C .> 0, :]
+    @test prof2.obs == prof.obs
+
     filter!(:C => x -> x > 0, prof2)
     @test prof2.var == prof.var[prof.var.C .> 0, :]
     @test prof2.data == prof.data[prof.var.C .> 0, :]
