@@ -72,5 +72,12 @@ function Base.filter!(x::Pair{Symbol,T}, prof::Profile) where {T}
     sel = f.(prof.var[:,col])
     filter!(x, prof.var)
     prof.data = prof.data[sel, :]
+    if isempty(prof.layers)
+        for k in keys(prof.layers)
+            if size(prof.layers[k]) == size(prof.data)
+                prof.layers[k] = prof.layers[k][sel, :]
+            end
+        end
+    end
     prof
 end

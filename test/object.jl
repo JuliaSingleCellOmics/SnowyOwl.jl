@@ -6,6 +6,8 @@
     @test_throws AssertionError Profile(data, obs, var)
 
     prof = Profile(data, var, obs)
+    prof.layers[:a] = rand(r, c)
+    prof.layers[:b] = rand(c, r)
     @test obsnames(prof) == ["A", "B"]
     @test varnames(prof) == ["C", "D"]
     @test nrow(prof) == r
@@ -18,6 +20,8 @@
     @test axes(prof) == (Base.OneTo(r), Base.OneTo(c))
     @test_throws AssertionError prof.obs = var
     @test_throws AssertionError prof.var = obs
+    @test size(prof.layers[:a]) == (r, c)
+    @test size(prof.layers[:b]) == (c, r)
 
     prof2 = copy(prof)
     @test prof2 !== prof
@@ -30,6 +34,8 @@
     @test prof2.var == prof.var[prof.var.C .> 0, :]
     @test prof2.data == prof.data[prof.var.C .> 0, :]
     @test prof2.obs == prof.obs
+    @test prof2.layers[:a] == prof.layers[:a][prof.var.C .> 0, :]
+    @test prof2.layers[:b] == prof.layers[:b]
 
     filter!(:C => x -> x > 0, prof2)
     @test prof2.var == prof.var[prof.var.C .> 0, :]
