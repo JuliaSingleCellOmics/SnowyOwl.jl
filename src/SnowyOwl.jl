@@ -1,7 +1,10 @@
 module SnowyOwl
 
-using SparseArrays
+using SparseArrays: SparseMatrixCSC
 using DataFrames
+using DataStructures: OrderedDict
+
+import DataFrames: nrow, ncol
 
 export
     # io

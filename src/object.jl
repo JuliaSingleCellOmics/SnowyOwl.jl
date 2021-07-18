@@ -1,8 +1,4 @@
-using DataStructures: OrderedDict
-
-import DataFrames: nrow, ncol
-
-mutable struct Profile{T<:AbstractMatrix,S<:AbstractMatrix}
+mutable struct Profile{T<:AbstractMatrix,S}
     data::T
     var::DataFrame
     obs::DataFrame
@@ -10,11 +6,13 @@ mutable struct Profile{T<:AbstractMatrix,S<:AbstractMatrix}
     pipeline::OrderedDict
 end
 
-function Profile(data::T, var::DataFrame, obs::DataFrame) where {T<:AbstractMatrix}
-    r, c = size(data)
-    @assert nrow(obs) == c
-    @assert nrow(var) == r
-    Profile{T,Matrix}(data, var, obs, Dict{Symbol,Matrix}(), OrderedDict{Symbol,Dict}())
+function Profile(data::M, var::DataFrame, obs::DataFrame; T=float(eltype(data))) where {M<:AbstractMatrix}
+    @assert (nrow(var), nrow(obs)) == size(data)
+    S = Union{Matrix{T},SparseMatrixCSC{T,UInt32}}
+    data = T.(data)
+    layers = Dict{Symbol,S}()
+    pipeline = OrderedDict{Symbol,Dict}()
+    Profile{typeof(data),S}(data, copy(var), copy(obs), layers, pipeline)
 end
 
 obsnames(p::Profile) = names(p.obs)
@@ -74,10 +72,15 @@ function Base.filter!(x::Pair{Symbol,T}, prof::Profile) where {T}
     sel = f.(prof.var[:,col])
     filter!(x, prof.var)
     prof.data = prof.data[sel, :]
+    filter_layers!(prof, var_idx=sel)
+    prof
+end
+
+function filter_layers!(prof::Profile; var_idx=(:), obs_idx=(:))
     if isempty(prof.layers)
         for k in keys(prof.layers)
             if size(prof.layers[k]) == size(prof.data)
-                prof.layers[k] = prof.layers[k][sel, :]
+                prof.layers[k] = prof.layers[k][var_idx, obs_idx]
             end
         end
     end
