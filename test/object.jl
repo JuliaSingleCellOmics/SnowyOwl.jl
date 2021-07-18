@@ -41,13 +41,21 @@
     @test prof2.var == prof.var[prof.var.C .> 0, :]
     @test prof2.data == prof.data[prof.var.C .> 0, :]
     @test prof2.obs == prof.obs
+    @test prof2.layers[:a] == prof.layers[:a][prof.var.C .> 0, :]
+    @test prof2.layers[:b] == prof.layers[:b]
 
     prof2 = prof[1:50, :]
-    @test prof2.data == prof.data[:, 1:50]
+    @test prof2.data == prof.data[1:50, :]
 
-    idx = rand([false,true], c)
+    idx = rand([false,true], r)
     prof3 = prof[idx, :]
-    @test prof3.data == prof.data[:, idx]
-    @test prof3.var == prof.var
-    @test prof3.obs == prof.obs[idx, :]
+    @test prof3.data == prof.data[idx, :]
+    @test prof3.var == prof.var[idx, :]
+    @test prof3.obs == prof.obs
+
+    idx2 = rand([false,true], c)
+    prof4 = prof[:, idx2]
+    @test prof4.data == prof.data[:, idx2]
+    @test prof4.var == prof.var
+    @test prof4.obs == prof.obs[idx2, :]
 end
