@@ -1,15 +1,15 @@
 @testset "object" begin
     r, c = (100, 500)
     data = rand(0:10, r, c)
-    obs = DataFrame(A=rand(c), B=rand(c))
-    var = DataFrame(C=rand(r), D=rand(r))
+    obs = DataFrame(index=1:c, A=rand(c), B=rand(c))
+    var = DataFrame(index=1:r, C=rand(r), D=rand(r))
     @test_throws AssertionError Profile(data, obs, var)
 
     prof = Profile(data, var, obs)
     prof.layers[:a] = rand(r, c)
     prof.layers[:b] = rand(c, r)
-    @test obsnames(prof) == ["A", "B"]
-    @test varnames(prof) == ["C", "D"]
+    @test obsnames(prof) == ["index", "A", "B"]
+    @test varnames(prof) == ["index", "C", "D"]
     @test nrow(prof) == r
     @test ncol(prof) == c
     @test nvar(prof) == r
@@ -22,6 +22,9 @@
     @test_throws AssertionError prof.var = obs
     @test size(prof.layers[:a]) == (r, c)
     @test size(prof.layers[:b]) == (c, r)
+    @test vec(get_gene_expr(prof, 50)) == data[50, :]
+    @test vec(get_gene_expr(prof, 50, :a)) == prof.layers[:a][50, :]
+    @test isempty(get_gene_expr(prof, r+11, :a))
 
     prof2 = copy(prof)
     @test prof2 !== prof

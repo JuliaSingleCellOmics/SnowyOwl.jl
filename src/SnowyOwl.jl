@@ -1,5 +1,6 @@
 module SnowyOwl
 
+using PyCall: isempty, length
 using SparseArrays: SparseMatrixCSC
 using DataFrames
 using DataStructures: OrderedDict
@@ -23,6 +24,7 @@ export
     ncol,
     nvar,
     nobs,
+    get_gene_expr,
 
     # datasets
     load_pbmc68k,

@@ -84,3 +84,13 @@ function filter_layers!(prof::Profile; var_idx=(:), obs_idx=(:))
     end
     prof
 end
+
+function get_gene_expr(prof::Profile, gene_name, ::Nothing=nothing)
+    idx = collect(1:nrow(prof))[prof.var.index .== gene_name]
+    return view(prof.data, idx, :)
+end
+
+function get_gene_expr(prof::Profile, gene_name, layer::Symbol)
+    idx = collect(1:nrow(prof))[prof.var.index .== gene_name]
+    return view(prof.layers[layer], idx, :)
+end
