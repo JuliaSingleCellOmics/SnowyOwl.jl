@@ -1,8 +1,4 @@
-using DataStructures: OrderedDict
-
-import DataFrames: nrow, ncol
-
-mutable struct Profile{T<:AbstractMatrix,S<:AbstractMatrix}
+mutable struct Profile{T<:AbstractMatrix,S}
     data::T
     var::DataFrame
     obs::DataFrame
@@ -10,11 +6,13 @@ mutable struct Profile{T<:AbstractMatrix,S<:AbstractMatrix}
     pipeline::OrderedDict
 end
 
-function Profile(data::T, var::DataFrame, obs::DataFrame) where {T<:AbstractMatrix}
-    r, c = size(data)
-    @assert nrow(obs) == c
-    @assert nrow(var) == r
-    Profile{T,Matrix}(data, var, obs, Dict{Symbol,Matrix}(), OrderedDict{Symbol,Dict}())
+function Profile(data::M, var::DataFrame, obs::DataFrame; T=float(eltype(data))) where {M<:AbstractMatrix}
+    @assert (nrow(var), nrow(obs)) == size(data)
+    S = Union{Matrix{T},SparseMatrixCSC{T,UInt32}}
+    data = T.(data)
+    layers = Dict{Symbol,S}()
+    pipeline = OrderedDict{Symbol,Dict}()
+    Profile{typeof(data),S}(data, copy(var), copy(obs), layers, pipeline)
 end
 
 obsnames(p::Profile) = names(p.obs)
@@ -42,11 +40,13 @@ Base.size(p::Profile) = size(p.data)
 Base.axes(p::Profile) = axes(p.data)
 
 function Base.getindex(p::Profile, inds...)
-    p_ = Profile(getindex(p.data, inds[2], inds[1]),
-                 getindex(p.var, inds[2], :),
-                 getindex(p.obs, inds[1], :))
+    p_ = Profile(getindex(p.data, inds[1], inds[2]),
+                 getindex(p.var, inds[1], :),
+                 getindex(p.obs, inds[2], :))
     for (k, v) in p.layers
-        p_.layers[k] = getindex(v, inds[2], inds[1])
+        if size(v) == size(p_.data)
+            p_.layers[k] = getindex(v, inds[1], inds[2])
+        end
     end
     p_.pipeline = copy(p.pipeline)
     p_
@@ -72,5 +72,15 @@ function Base.filter!(x::Pair{Symbol,T}, prof::Profile) where {T}
     sel = f.(prof.var[:,col])
     filter!(x, prof.var)
     prof.data = prof.data[sel, :]
+    filter_layers!(prof, var_idx=sel)
+    prof
+end
+
+function filter_layers!(prof::Profile; var_idx=(:), obs_idx=(:))
+    for k in keys(prof.layers)
+        if size(prof.layers[k]) == size(prof.data)
+            prof.layers[k] = prof.layers[k][var_idx, obs_idx]
+        end
+    end
     prof
 end

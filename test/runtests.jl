@@ -7,6 +7,7 @@ using Test
 tests = [
     "object",
     # "io"
+    "filter",
     "moments",
 ]
 

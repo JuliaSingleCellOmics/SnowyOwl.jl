@@ -1,7 +1,10 @@
 module SnowyOwl
 
-using SparseArrays
+using SparseArrays: SparseMatrixCSC
 using DataFrames
+using DataStructures: OrderedDict
+
+import DataFrames: nrow, ncol
 
 export
     # io
@@ -26,7 +29,9 @@ export
 
     # filter
     filter_cells!,
+    filter_cells,
     filter_genes!,
+    filter_genes,
 
     # model
     unspliced,
