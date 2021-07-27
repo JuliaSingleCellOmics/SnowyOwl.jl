@@ -77,11 +77,9 @@ function Base.filter!(x::Pair{Symbol,T}, prof::Profile) where {T}
 end
 
 function filter_layers!(prof::Profile; var_idx=(:), obs_idx=(:))
-    if isempty(prof.layers)
-        for k in keys(prof.layers)
-            if size(prof.layers[k]) == size(prof.data)
-                prof.layers[k] = prof.layers[k][var_idx, obs_idx]
-            end
+    for k in keys(prof.layers)
+        if size(prof.layers[k]) == size(prof.data)
+            prof.layers[k] = prof.layers[k][var_idx, obs_idx]
         end
     end
     prof

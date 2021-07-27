@@ -29,7 +29,9 @@ export
 
     # filter
     filter_cells!,
+    filter_cells,
     filter_genes!,
+    filter_genes,
 
     # model
     unspliced,
