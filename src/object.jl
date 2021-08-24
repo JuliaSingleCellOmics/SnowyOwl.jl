@@ -71,8 +71,8 @@ function Base.filter!(x::Pair{Symbol,T}, prof::Profile) where {T}
     col, f = x
     sel = f.(prof.var[:,col])
     filter!(x, prof.var)
-    prof.data = prof.data[sel, :]
     filter_layers!(prof, var_idx=sel)
+    prof.data = prof.data[sel, :]
     prof
 end
 
