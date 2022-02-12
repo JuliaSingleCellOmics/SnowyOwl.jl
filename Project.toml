@@ -1,7 +1,7 @@
 name = "SnowyOwl"
 uuid = "c5d12a1c-ebca-44e1-aaa9-03f0dbaa929f"
 authors = ["Yueh-Hua Tu <a504082002@gmail.com>"]
-version = "0.1.1"
+version = "0.1.2"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
@@ -15,12 +15,12 @@ PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
-CSV = "0.8"
+CSV = "0"
 CodecZlib = "0.7"
 DataFrames = "1"
 DataStructures = "0.18"
-JLD2 = "0.3 - 0.4"
-PyCall = "1.92"
+JLD2 = "0"
+PyCall = "1"
 julia = "1.6"
 
 [extras]
