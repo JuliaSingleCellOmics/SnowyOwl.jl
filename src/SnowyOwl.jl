@@ -1,11 +1,17 @@
 module SnowyOwl
 
-using PyCall: isempty, length
-using SparseArrays: SparseMatrixCSC
-using DataFrames
+using PyCall
+using SparseArrays
+using CSV, DataFrames
+using CodecZlib, Mmap
+using JLD2
 using DataStructures: OrderedDict
 
 import DataFrames: nrow, ncol
+
+const DEFAULT_FEATURE_COLS = [:ensembleid, :genesymbol, :type]
+const DEFAULT_BARCODE_COLS = [:barcode]
+const FEATURE_COLS = [:featurekey, :featurename, :featuretype, :chromosome, :featurestart, :featureend, :isgene, :genus_species]
 
 export
     # io
