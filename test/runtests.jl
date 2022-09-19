@@ -9,6 +9,7 @@ tests = [
     # "io"
     "filter",
     "moments",
+    "qc",
 ]
 
 @testset "SnowyOwl.jl" begin

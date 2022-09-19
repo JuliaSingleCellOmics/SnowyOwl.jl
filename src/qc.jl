@@ -1,7 +1,49 @@
 """
-Calculate quality control metrics
+    quality_control_metrics(p)
+    quality_control_metrics(X, obs, var; obsname, varname)
+
+Calculate quality control metrics.
+
+# Arguments
+- `p::Profile`: The profile object to calculate on.
+- `X::AbstractMatrix`: The count matrix to calculate on.
+- `obs::DataFrame`: The feature information matrix with cell information.
+- `var::DataFrame`: The feature information matrix with gene information.
+
+# Keyword arguments
+- `obsname::Symbol=:barcode`:
+- `varname::Symbol=:gene_symbols`:
+- `log1p::Bool`:
+- `qc_vars::AbstractVector{String}=["mt"]`:
+- `percent_top=nothing`:
+
+# Example
+
+See also [`quality_control_metrics!`](@ref) for non-inplace operation.
 """
 function quality_control_metrics end
+
+"""
+    quality_control_metrics!(p)
+    quality_control_metrics!(X, obs, var)
+
+Calculate quality control metrics.
+
+# Arguments
+- `p::Profile`: The profile object to calculate on.
+- `X::AbstractMatrix`: The count matrix to calculate on.
+- `obs::DataFrame`: The feature information matrix with cell information.
+- `var::DataFrame`: The feature information matrix with gene information.
+
+# Keyword arguments
+- `log1p::Bool`:
+- `qc_vars::AbstractVector{String}=["mt"]`:
+- `percent_top=nothing`:
+
+# Example
+
+See also [`quality_control_metrics`](@ref) for non-inplace operation.
+"""
 function quality_control_metrics! end
 
 
