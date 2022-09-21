@@ -1,10 +1,4 @@
-function read_mtx(filename::String)
-    py"""
-    from scipy.io import mmread
-    mtx = mmread($filename)
-    """
-    sparse(py"mtx.row" .+ 1, py"mtx.col" .+ 1, py"mtx.data")
-end
+read_mtx(filename::String) = OmicsProfiles.mmread(filename)
 
 function read_tsv_gz(filename::String, header::Vector{Symbol}=Symbol[])
     gz_unzipper = transcode(GzipDecompressor, Mmap.mmap(filename))

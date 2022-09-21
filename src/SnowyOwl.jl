@@ -1,11 +1,13 @@
 module SnowyOwl
 
-using PyCall
+using LinearAlgebra
 using SparseArrays
+
 using CSV, DataFrames
 using CodecZlib, Mmap
 using JLD2
 using DataStructures: OrderedDict
+using OmicsProfiles
 
 import DataFrames: nrow, ncol
 
@@ -21,30 +23,8 @@ export
     read_genes,
     read_cells,
 
-    # object
-    Profile,
-    obsnames,
-    varnames,
-    layernames,
-    nrow,
-    ncol,
-    nvar,
-    nobs,
-    get_gene_expr,
-
     # datasets
     load_pbmc68k,
-
-    # filter
-    filter_cells!,
-    filter_cells,
-    filter_genes!,
-    filter_genes,
-
-    # model
-    unspliced,
-    spliced,
-    mRNA,
 
     #moments
     normalize_indicator,
@@ -55,10 +35,8 @@ export
     first_moment
 
 include("io.jl")
-include("object.jl")
 include("datasets.jl")
-include("preprocess/filter.jl")
-include("model.jl")
+# include("preprocess/filter.jl")
 include("moments.jl")
 
 end
