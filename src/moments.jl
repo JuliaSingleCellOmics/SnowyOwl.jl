@@ -1,6 +1,3 @@
-using LinearAlgebra: diagm
-using SparseArrays: sparse
-
 normalize_indicator(i::AbstractArray) = i ./ sum(i)
 normalize_indicator(i::AbstractArray, dims) = i ./ sum(i, dims=dims)
 
@@ -21,7 +18,7 @@ _generate_slices(n, k) = Base.ntuple(i->(i==n) ? k : Colon(), 2)
 Generate a graph filter of `order`-th order moment depending on the indicator `ind`.
 
 ## Arguments
-- `ind`: the indicator vector or matrix with values of 0s or 1s. 
+- `ind`: the indicator vector or matrix with values of 0s or 1s.
 - `order`: the order of moment for a graph filter. If `order=1`, generates a first moment graph filter,
 which is the mean operator. If `order=2`, generates a second moment graph filter, which is the covariance operator.
 """

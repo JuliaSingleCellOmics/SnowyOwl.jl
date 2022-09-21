@@ -5,9 +5,7 @@ using SparseArrays
 using Test
 
 tests = [
-    "object",
-    # "io"
-    "filter",
+    # "filter",
     "qc",
     "moments",
 ]
