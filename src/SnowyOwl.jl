@@ -41,6 +41,10 @@ export
     filter_genes!,
     filter_genes,
 
+    # qc
+    quality_control_metrics!,
+    quality_control_metrics
+
     # model
     unspliced,
     spliced,
@@ -58,6 +62,7 @@ include("io.jl")
 include("object.jl")
 include("datasets.jl")
 include("preprocess/filter.jl")
+include("qc.jl")
 include("model.jl")
 include("moments.jl")
 
