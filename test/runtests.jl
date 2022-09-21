@@ -10,7 +10,6 @@ tests = [
     "filter",
     "qc",
     "moments",
-    "model",
 ]
 
 @testset "SnowyOwl.jl" begin

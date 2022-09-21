@@ -45,11 +45,6 @@ export
     quality_control_metrics!,
     quality_control_metrics
 
-    # model
-    unspliced,
-    spliced,
-    mRNA,
-
     #moments
     normalize_indicator,
     to_indicator_matrix,
@@ -63,7 +58,6 @@ include("object.jl")
 include("datasets.jl")
 include("preprocess/filter.jl")
 include("qc.jl")
-include("model.jl")
 include("moments.jl")
 
 end
