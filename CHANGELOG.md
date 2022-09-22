@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.3]
+
+- modulize project
+- replace `Profile` as `OmicsProfiles`
+- add highly variable genes
+
 ## [0.1.2]
 
 - bug fix
