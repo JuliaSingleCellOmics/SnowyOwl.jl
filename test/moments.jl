@@ -31,7 +31,7 @@
     @test G isa SparseMatrixCSC
     @test sum(G .!= 0, dims=1) == sum(adj .!= 0, dims=1)
     @test sum(G, dims=1) ≈ ones(Int64, 1, 10)
-    
+
     G = graph_filter(adj, 1, dims=2)
     @test G isa SparseMatrixCSC
     @test sum(G .!= 0, dims=2) == sum(adj .!= 0, dims=2)
@@ -46,8 +46,8 @@
 
     A = rand([0,1], 5, 5)
     X = rand(5, 10)
-    @test size(moment(A, X, 1, dims=1)) == size(X)
-    @test size(moment(A, Matrix(X'), 1, dims=2)) == size(X')
+    @test size(SnowyOwl.moment(A, X, 1, dims=1)) == size(X)
+    @test size(SnowyOwl.moment(A, Matrix(X'), 1, dims=2)) == size(X')
     # @test size(moment(A, X, 2, dims=1)) == (size(X, 1), 5*10)
     # @test size(moment(A, Matrix(X'), 2, dims=2)) == (5*10, size(X, 1))
 end

@@ -1,11 +1,13 @@
 using SnowyOwl
-using DataFrames
 using LinearAlgebra
 using SparseArrays
+using DataFrames
+using Distributions
 using Test
 
 tests = [
     # "filter",
+    "highly_variable",
     "moments",
 ]
 
