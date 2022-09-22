@@ -8,6 +8,7 @@ using CodecZlib, Mmap
 using JLD2
 using DataStructures: OrderedDict
 using OmicsProfiles
+using StatsBase
 
 import DataFrames: nrow, ncol
 
@@ -26,6 +27,10 @@ export
     # datasets
     load_pbmc68k,
 
+    # highly_variable
+    highly_variable_genes,
+    highly_variable_genes!,
+
     #moments
     normalize_indicator,
     to_indicator_matrix,
@@ -37,6 +42,8 @@ export
 include("io.jl")
 include("datasets.jl")
 # include("preprocess/filter.jl")
+include("highly_variable.jl")
 include("moments.jl")
+include("utils.jl")
 
 end

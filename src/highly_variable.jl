@@ -1,0 +1,213 @@
+"""
+    highly_variable_genes(prof, method; omicsname=:RNA, layer=:count)
+    highly_variable_genes(X, var, method; varname=:gene_symbols)
+
+Calculate highly variable genes and return a new `DataFrame` with column :highly_variable,
+which selects highly variable genes from given gene set. Additional information including
+`:means`, `:dispersions` and `:dispersions_norm` will be added to returned `DataFrame`.
+
+# Arguments
+
+- `prof::AnnotatedProfile`: The profile object to calculate on.
+- `X::AbstractMatrix`: The count matrix to calculate on.
+- `var::DataFrame`: The feature information matrix with gene information.
+- `method::Symbol`: Method to calculate highly variable genes, available for `:cellranger`,
+    `:seurat` and `:seuratv3`.
+
+# Keyword arguments
+
+- `omicsname::Symbol`: The `OmicsProfile` specified to calculate on.
+- `layer::Symbol`: The layer specified to calculate on.
+- `varname::Symbol`: The variable name to be specified as identifier for genes.
+- `ntop_genes::Int=-1`: Number of top variable genes to be selected. Specify `-1` to switch
+    to selection by mean and dispersion. Available for `:cellranger` and `:seurat` methods.
+- `min_disp::Real=0.5`: Minimum dispersion for selecting highly variable genes. Available
+    for `:cellranger` and `:seurat` methods.
+- `max_disp::Real=Inf`: Maximum dispersion for selecting highly variable genes. Available
+    for `:cellranger` and `:seurat` methods.
+- `min_mean::Real=0.0125`: Minimum mean for selecting highly variable genes. Available for
+    `:cellranger` and `:seurat` methods.
+- `max_mean::Real=3.`: Maximum mean for selecting highly variable genes. Available for
+    `:cellranger` and `:seurat` methods.
+
+# Examples
+
+See also [`highly_variable_genes!`](@ref) for inplace operation.
+"""
+function highly_variable_genes end
+
+"""
+    highly_variable_genes!(prof, method; omicsname=:RNA, layer=:count)
+    highly_variable_genes!(X, var, method)
+
+Calculate highly variable genes and modify `var` directly by adding column :highly_variable,
+which selects highly variable genes from given gene set. Additional information including
+`:means`, `:dispersions` and `:dispersions_norm` will be added to `var`.
+
+# Arguments
+
+- `prof::AnnotatedProfile`: The profile object to calculate on.
+- `X::AbstractMatrix`: The count matrix to calculate on.
+- `var::DataFrame`: The feature information matrix with gene information.
+- `method`: Method to calculate highly variable genes, available for `:cellranger`,
+    `:seurat` and `:seuratv3`.
+
+# Keyword arguments
+
+- `omicsname::Symbol`: The `OmicsProfile` specified to calculate on.
+- `layer::Symbol`: The layer specified to calculate on.
+- `ntop_genes::Int=-1`: Number of top variable genes to be selected. Specify `-1` to switch
+    to selection by mean and dispersion. Available for `:cellranger` and `:seurat` methods.
+- `min_disp::Real=0.5`: Minimum dispersion for selecting highly variable genes. Available
+    for `:cellranger` and `:seurat` methods.
+- `max_disp::Real=Inf`: Maximum dispersion for selecting highly variable genes. Available
+    for `:cellranger` and `:seurat` methods.
+- `min_mean::Real=0.0125`: Minimum mean for selecting highly variable genes. Available for
+    `:cellranger` and `:seurat` methods.
+- `max_mean::Real=3.`: Maximum mean for selecting highly variable genes. Available for
+    `:cellranger` and `:seurat` methods.
+
+# Examples
+
+See also [`highly_variable_genes`](@ref) for non-inplace operation.
+"""
+function highly_variable_genes! end
+
+
+highly_variable_genes(p::AnnotatedProfile, method::Symbol=:seuratv3; kwargs...) =
+    highly_variable_genes!(copy(p), method; kwargs...)
+
+function highly_variable_genes!(p::AnnotatedProfile, method::Symbol=:seuratv3;
+                                omicsname::Symbol=:RNA, layer::Symbol=:count, kwargs...)
+    p = p.omics[omicsname]
+    @assert haskey(p.layers, layer) "$layer not found in layers."
+    X = getlayer(p, layer)
+    if method == :seurat && haskey(p.pipeline, :log1p)
+        X .*= log(p.pipeline[:log1p][:base])
+    end
+
+    hvg_result = highly_variable_genes!(X, p.var, Val(method); kwargs...)
+    # log to console
+
+    param = Dict(:method => method, :layer => layer)
+    setpipeline!(p, param, :hvg)
+    return p
+end
+
+highly_variable_genes(X::AbstractMatrix, var::DataFrame, method::Symbol; kwargs...) =
+    highly_variable_genes(X, var, Val(method); kwargs...)
+
+function highly_variable_genes(X::AbstractMatrix, var::DataFrame, method::Val;
+                               varname::Symbol=:gene_symbols, kwargs...)
+    df = DataFrame()
+    df[!, varname] = var[!, varname]
+    return highly_variable_genes!(X, df, method; kwargs...)
+end
+
+highly_variable_genes!(X::AbstractMatrix, var::DataFrame, method::Symbol; kwargs...) =
+    highly_variable_genes!(X, var, Val(method); kwargs...)
+
+function highly_variable_genes!(X::AbstractMatrix, var::DataFrame, method::Val{:seurat};
+    ntop_genes::Int=-1, min_disp=0.5, max_disp=Inf, min_mean=0.0125, max_mean=3.,
+    nbins::Int=20)
+    X = expm1.(X)
+    μ, σ² = mean_and_var(X, 2, corrected=true)
+    μ, σ² = vec(μ), vec(σ²)
+
+    # compute dispersion
+    replace!(μ, 0. => 1e-12)
+    dispersion = replace!(σ² ./ μ, 0. => NaN)
+    dispersion .= log.(dispersion)
+    μ .= log1p.(μ)
+
+    var[!, :means] = μ
+    var[!, :dispersions] = dispersion
+    h = fit(Histogram, μ; nbins=nbins)
+    var[!, :mean_bin] = map(x -> StatsBase.binindex(h, x), μ)
+    gdf = groupby(var, :mean_bin)
+    disp_bin = combine(gdf, [:dispersions => mean, :dispersions => std])
+    disp_bin = fill_missing_bins(disp_bin, :mean_bin, :dispersions_mean => 0,
+                                 :dispersions_std => NaN)
+    # retrieve those genes that have nan std, these are the ones where only a single gene
+    # fell in the bin and implicitly set them to have a normalized disperion of 1
+    one_gene_per_bin = isnan.(disp_bin.dispersions_std)
+    gen_indices = findall(one_gene_per_bin[var.mean_bin])
+    if length(gen_indices) > 0
+        msg = "Gene indices $gen_indices fell into a single bin: their normalized dispersion" *
+            "was set to 1.\nDecreasing `n_bins` will likely avoid this effect."
+        @debug msg
+    end
+    disp_bin[one_gene_per_bin, :dispersions_std] .= disp_bin[one_gene_per_bin, :dispersions_mean]
+    disp_bin[one_gene_per_bin, :dispersions_mean] .= 0
+    disp_norm = normalize_by_bins(var.dispersions, disp_bin.dispersions_mean,
+                          disp_bin.dispersions_std, var.mean_bin)
+    var[!, :dispersions_norm] = disp_norm
+
+    var[!, :highly_variable] = select_ntop_genes(μ, disp_norm, ntop_genes, nrow(var),
+        min_mean, max_mean, min_disp, max_disp)
+    select!(var, Not(:mean_bin))
+    return var
+end
+
+function highly_variable_genes!(X::AbstractMatrix, var::DataFrame, method::Val{:cellranger};
+    ntop_genes::Int=-1, min_disp=0.5, max_disp=Inf, min_mean=0.0125, max_mean=3.)
+    μ, σ² = mean_and_var(X, 2, corrected=true)
+    μ, σ² = vec(μ), vec(σ²)
+
+    # compute dispersion
+    replace!(μ, 0. => 1e-12)
+    dispersion = σ² ./ μ
+
+    var[!, :means] = μ
+    var[!, :dispersions] = dispersion
+    bins = [-Inf, percentile(μ, 10:5:100)..., Inf]
+    h = fit(Histogram, μ, bins)
+    var[!, :mean_bin] = map(x -> StatsBase.binindex(h, x), μ)
+    gdf = groupby(var, :mean_bin)
+    disp_bin = combine(gdf, [:dispersions => median, :dispersions => mad])
+    disp_bin = fill_missing_bins(disp_bin, :mean_bin, :dispersions_median => 0,
+                                 :dispersions_mad => NaN)
+
+    disp_norm = normalize_by_bins(var.dispersions, disp_bin.dispersions_median,
+                                        disp_bin.dispersions_mad, var.mean_bin)
+    var[!, :dispersions_norm] = disp_norm
+
+    var[!, :highly_variable] = select_ntop_genes(μ, disp_norm, ntop_genes, nrow(var),
+        min_mean, max_mean, min_disp, max_disp)
+    select!(var, Not(:mean_bin))
+    return var
+end
+
+normalize_by_bins(x::AbstractVector, center, disp, bins) = @. (x - center[bins]) / disp[bins]
+
+function select_ntop_genes(μ::AbstractVector, disp_norm::AbstractVector, ntop_genes::Int,
+        total_genes::Int, min_mean::Real, max_mean::Real, min_disp::Real, max_disp::Real)
+    if ntop_genes < 0
+        return select_ntop_genes(μ, disp_norm, min_mean, max_mean, min_disp, max_disp)
+    else
+        if ntop_genes > total_genes
+            @info "n_top_genes ($ntop_genes) is greater than number of gene, returning all genes."
+            ntop_genes = total_genes
+        end
+        return select_ntop_genes(disp_norm, ntop_genes)
+    end
+end
+
+function select_ntop_genes(μ::AbstractVector, disp_norm::AbstractVector, min_mean::Real,
+        max_mean::Real, min_disp::Real, max_disp::Real)
+    disp_norm = replace(disp_norm, NaN => 0)
+    return (min_mean .< μ .< max_mean) .& (min_disp .< disp_norm .< max_disp)
+end
+
+function select_ntop_genes(disp_norm::AbstractVector, ntop_genes::Int)
+    filtered_disp_norm = disp_norm[.!isnan.(disp_norm)]
+    sort!(filtered_disp_norm, rev=true)
+    if ntop_genes > length(filtered_disp_norm)
+        @warn "`n_top_genes` > number of normalized dispersions, returning all genes with normalized dispersions."
+        ntop_genes = length(filtered_disp_norm)
+    end
+    cutoff = filtered_disp_norm[ntop_genes]
+    gene_subset = replace(disp_norm, NaN => 0) .>= cutoff
+    @debug "$ntop_genes top genes correspond to a normalized dispersion cutoff of $cutoff."
+    return gene_subset
+end
