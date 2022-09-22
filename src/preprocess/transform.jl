@@ -1,8 +1,10 @@
-normalize_total(p::Profile, library_size::Real=1e6)
+# normalize_total(p::AnnotatedProfile, library_size::Real=1e6)
 
 """
 Logarithmize the data matrix.
 """
-function log1p(p::Profile; base::Real=ℯ)
-    log1p.(p.data) ./ log(base)
+function log1p!(p::AnnotatedProfile; base::Real=ℯ)
+    p.data .= @. log1p(p.data) / log(base)
+    p.pipeline[:log1p] = Dict{Symbol,Any}(:base => base)
+    return p
 end
