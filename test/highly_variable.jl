@@ -29,13 +29,13 @@
                                   min_mean=min_mean, max_mean=max_mean)
     top_genes = (min_mean .< prof2.var.means .< max_mean) .&
                 (min_disp .< prof2.var.dispersions_norm .< max_disp)
-    @test names(prof2.var) == ["gene_symbols", "means", "dispersions", "dispersions_norm",
+    @test names(prof2.var) == ["gene_symbols", "A", "means", "dispersions", "dispersions_norm",
                                "highly_variable"]
     @test all(top_genes .== prof2.var.highly_variable)
 
     highly_variable_genes!(prof, :seurat; omicsname=:RNA, layer=:count, ntop_genes=nhvgs)
-    @test names(prof.omics[:RNA].var) == ["gene_symbols", "A", "means", "dispersions", "dispersions_norm",
-                         "highly_variable"]
+    @test names(prof.omics[:RNA].var) == ["gene_symbols", "A", "means", "dispersions",
+                                          "dispersions_norm", "highly_variable"]
     @test count(prof.omics[:RNA].var.highly_variable) == nhvgs
     @test haskey(prof.omics[:RNA].pipeline, :hvg)
 end
