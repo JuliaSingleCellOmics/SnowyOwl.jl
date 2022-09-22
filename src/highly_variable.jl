@@ -1,5 +1,5 @@
 """
-    highly_variable_genes(prof, method; layer=:count)
+    highly_variable_genes(prof, method; omicsname=:RNA, layer=:count)
     highly_variable_genes(X, var, method; varname=:gene_symbols)
 
 Calculate highly variable genes and return a new `DataFrame` with column :highly_variable,
@@ -16,6 +16,7 @@ which selects highly variable genes from given gene set. Additional information 
 
 # Keyword arguments
 
+- `omicsname::Symbol`: The `OmicsProfile` specified to calculate on.
 - `layer::Symbol`: The layer specified to calculate on.
 - `varname::Symbol`: The variable name to be specified as identifier for genes.
 - `ntop_genes::Int=-1`: Number of top variable genes to be selected. Specify `-1` to switch
@@ -36,7 +37,7 @@ See also [`highly_variable_genes!`](@ref) for inplace operation.
 function highly_variable_genes end
 
 """
-    highly_variable_genes!(prof, method; layer=:count)
+    highly_variable_genes!(prof, method; omicsname=:RNA, layer=:count)
     highly_variable_genes!(X, var, method)
 
 Calculate highly variable genes and modify `var` directly by adding column :highly_variable,
@@ -53,6 +54,7 @@ which selects highly variable genes from given gene set. Additional information 
 
 # Keyword arguments
 
+- `omicsname::Symbol`: The `OmicsProfile` specified to calculate on.
 - `layer::Symbol`: The layer specified to calculate on.
 - `ntop_genes::Int=-1`: Number of top variable genes to be selected. Specify `-1` to switch
     to selection by mean and dispersion. Available for `:cellranger` and `:seurat` methods.
@@ -76,14 +78,15 @@ highly_variable_genes(p::AnnotatedProfile, method::Symbol=:seuratv3; kwargs...) 
     highly_variable_genes!(copy(p), method; kwargs...)
 
 function highly_variable_genes!(p::AnnotatedProfile, method::Symbol=:seuratv3;
-                                layer::Symbol=:count, kwargs...)
-    @assert haskey(layernames(p), layer) "$layer not found in layers."
+                                omicsname::Symbol=:RNA, layer::Symbol=:count, kwargs...)
+    p = p.omics[omicsname]
+    @assert haskey(p.layers, layer) "$layer not found in layers."
     X = getlayer(p, layer)
     if method == :seurat && haskey(p.pipeline, :log1p)
         X .*= log(p.pipeline[:log1p][:base])
     end
 
-    hvg_result = highly_variable_genes!(p.var, X, Val(method); kwargs...)
+    hvg_result = highly_variable_genes!(X, p.var, Val(method); kwargs...)
     # log to console
 
     param = Dict(:method => method, :layer => layer)

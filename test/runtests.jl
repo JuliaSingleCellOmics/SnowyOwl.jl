@@ -1,4 +1,5 @@
 using SnowyOwl
+using OmicsProfiles
 using LinearAlgebra
 using SparseArrays
 using DataFrames
