@@ -1,3 +1,16 @@
+module RW
+
+using CSV, DataFrames
+using CodecZlib, Mmap
+
+export
+    read_mtx,
+    read_features,
+    read_barcodes,
+    read_genes,
+    read_cells
+
+
 read_mtx(filename::String) = OmicsProfiles.mmread(filename)
 
 function read_tsv_gz(filename::String, header::Vector{Symbol}=Symbol[])
@@ -12,3 +25,5 @@ read_barcodes(filename::String, names=DEFAULT_BARCODE_COLS) = read_tsv_gz(filena
 ## Human Cell Atlas (HCA)
 read_genes(filename::String) = read_tsv_gz(filename)
 read_cells(filename::String) = read_tsv_gz(filename)
+
+end

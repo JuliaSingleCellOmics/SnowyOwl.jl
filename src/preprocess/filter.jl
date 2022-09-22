@@ -1,19 +1,19 @@
 """
 Filter out cells which are not satisfy specific criteria.
 """
-function filter_cells!(p::Profile; min_counts::Real=0, max_counts::Real=maximum(sum(p.data,dims=1)),
+function filter_cells!(p::AnnotatedProfile; min_counts::Real=0, max_counts::Real=maximum(sum(p.data,dims=1)),
                        min_genes::Real=0, max_genes::Real=nrow(p))
       check_cell_args(min_counts, max_counts, min_genes, max_genes)
       return _filter_cells!(p, min_counts, max_counts, min_genes, max_genes)
 end
 
-function filter_cells(p::Profile; min_counts::Real=0, max_counts::Real=maximum(sum(p.data,dims=1)),
+function filter_cells(p::AnnotatedProfile; min_counts::Real=0, max_counts::Real=maximum(sum(p.data,dims=1)),
                       min_genes::Real=0, max_genes::Real=nrow(p))
       check_cell_args(min_counts, max_counts, min_genes, max_genes)
       return _filter_cells!(copy(p), min_counts, max_counts, min_genes, max_genes)
 end
 
-function _filter_cells!(p::Profile, min_counts::Real, max_counts::Real, min_genes::Real, max_genes::Real)
+function _filter_cells!(p::AnnotatedProfile, min_counts::Real, max_counts::Real, min_genes::Real, max_genes::Real)
       expressed_genes = sum(p.data .!= 0, dims=1)
       bool_idx = min_genes .<= expressed_genes .<= max_genes
       library_size = sum(p.data, dims=1)
@@ -37,19 +37,19 @@ end
 """
 Filter out genes which are not satisfy specific criteria.
 """
-function filter_genes!(p::Profile; min_counts::Real=0, max_counts::Real=maximum(sum(p.data,dims=2)),
+function filter_genes!(p::AnnotatedProfile; min_counts::Real=0, max_counts::Real=maximum(sum(p.data,dims=2)),
                        min_cells::Real=0, max_cells::Real=ncol(p))
       check_genes_args(min_counts, max_counts, min_cells, max_cells)
       return _filter_genes!(p, min_counts, max_counts, min_cells, max_cells)
 end
 
-function filter_genes(p::Profile; min_counts::Real=0, max_counts::Real=maximum(sum(p.data,dims=2)),
+function filter_genes(p::AnnotatedProfile; min_counts::Real=0, max_counts::Real=maximum(sum(p.data,dims=2)),
                       min_cells::Real=0, max_cells::Real=ncol(p))
       check_genes_args(min_counts, max_counts, min_cells, max_cells)
       return _filter_genes!(copy(p), min_counts, max_counts, min_cells, max_cells)
 end
 
-function _filter_genes!(p::Profile, min_counts::Real, max_counts::Real, min_cells::Real, max_cells::Real)
+function _filter_genes!(p::AnnotatedProfile, min_counts::Real, max_counts::Real, min_cells::Real, max_cells::Real)
       expressed_cells = sum(p.data .!= 0, dims=2)
       bool_idx = min_cells .<= expressed_cells .<= max_cells
       expressed_counts = sum(p.data, dims=2)

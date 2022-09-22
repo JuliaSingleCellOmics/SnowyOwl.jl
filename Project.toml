@@ -13,6 +13,7 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Loess = "4345ca2d-374a-55d4-8d30-97f9976e7612"
 Mmap = "a63ad114-7e13-5084-954f-fe012c677804"
 OmicsProfiles = "2c1f4335-9aeb-47fb-ad11-94d99429346c"
+Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
@@ -22,6 +23,8 @@ CodecZlib = "0.7"
 DataFrames = "1"
 DataStructures = "0.18"
 JLD2 = "0.4"
+OmicsProfiles = "0.1"
+Reexport = "1"
 julia = "1.6"
 
 [extras]
