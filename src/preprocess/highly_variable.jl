@@ -1,6 +1,6 @@
 """
-    highly_variable_genes(prof, method; omicsname=:RNA, layer=:count)
-    highly_variable_genes(X, var, method; varname=:gene_symbols)
+    highly_variable_genes(prof, method; omicsname=:RNA, layer=:count, kwargs...)
+    highly_variable_genes(X, var, method; varname=:gene_symbols, kwargs...)
 
 Calculate highly variable genes and return a new `DataFrame` with column :highly_variable,
 which selects highly variable genes from given gene set. Additional information including
@@ -14,11 +14,14 @@ which selects highly variable genes from given gene set. Additional information 
 - `method::Symbol`: Method to calculate highly variable genes, available for `:cellranger`,
     `:seurat` and `:seuratv3`.
 
-# Keyword arguments
+# Specific keyword arguments
 
 - `omicsname::Symbol`: The `OmicsProfile` specified to calculate on.
 - `layer::Symbol`: The layer specified to calculate on.
 - `varname::Symbol`: The variable name to be specified as identifier for genes.
+
+# Common keyword arguments
+
 - `ntop_genes::Int=-1`: Number of top variable genes to be selected. Specify `-1` to switch
     to selection by mean and dispersion. Available for `:cellranger` and `:seurat` methods.
 - `min_disp::Real=0.5`: Minimum dispersion for selecting highly variable genes. Available
@@ -37,8 +40,8 @@ See also [`highly_variable_genes!`](@ref) for inplace operation.
 function highly_variable_genes end
 
 """
-    highly_variable_genes!(prof, method; omicsname=:RNA, layer=:count)
-    highly_variable_genes!(X, var, method)
+    highly_variable_genes!(prof, method; omicsname=:RNA, layer=:count, kwargs...)
+    highly_variable_genes!(X, var, method; kwargs...)
 
 Calculate highly variable genes and modify `var` directly by adding column :highly_variable,
 which selects highly variable genes from given gene set. Additional information including
@@ -52,10 +55,13 @@ which selects highly variable genes from given gene set. Additional information 
 - `method`: Method to calculate highly variable genes, available for `:cellranger`,
     `:seurat` and `:seuratv3`.
 
-# Keyword arguments
+# Specific keyword arguments
 
 - `omicsname::Symbol`: The `OmicsProfile` specified to calculate on.
 - `layer::Symbol`: The layer specified to calculate on.
+
+# Common keyword arguments
+
 - `ntop_genes::Int=-1`: Number of top variable genes to be selected. Specify `-1` to switch
     to selection by mean and dispersion. Available for `:cellranger` and `:seurat` methods.
 - `min_disp::Real=0.5`: Minimum dispersion for selecting highly variable genes. Available
@@ -79,18 +85,21 @@ highly_variable_genes(p::AnnotatedProfile, method::Symbol=:seuratv3; kwargs...) 
 
 function highly_variable_genes!(p::AnnotatedProfile, method::Symbol=:seuratv3;
                                 omicsname::Symbol=:RNA, layer::Symbol=:count, kwargs...)
-    p = p.omics[omicsname]
-    @assert haskey(p.layers, layer) "$layer not found in layers."
-    X = getlayer(p, layer)
-    if method == :seurat && haskey(p.pipeline, :log1p)
-        X .*= log(p.pipeline[:log1p][:base])
+    omic = p.omics[omicsname]
+    @assert haskey(omic.layers, layer) "$layer not found in layers."
+    X = getlayer(omic, layer)
+    if method == :seurat && haskey(omic.pipeline, :log1p)
+        X .*= log(omic.pipeline[:log1p][:base])
     end
 
-    hvg_result = highly_variable_genes!(X, p.var, Val(method); kwargs...)
-    # log to console
+    @info "Calculating highly variable genes using $method method over $omicsname.$layer:"
+    cols = names(omic.var)
+    hvg_result = highly_variable_genes!(X, omic.var, Val(method); kwargs...)
+    @info "  => generated statistics for $(setdiff(names(hvg_result), cols))"
 
-    param = Dict(:method => method, :layer => layer)
-    setpipeline!(p, param, :hvg)
+    omic.pipeline[:hvg] = Dict(:method => method, :layer => layer)
+    @info "  => added :hvg to pipeline in $omicsname"
+
     return p
 end
 
