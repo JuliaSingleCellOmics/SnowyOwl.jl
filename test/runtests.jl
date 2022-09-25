@@ -4,10 +4,13 @@ using LinearAlgebra
 using SparseArrays
 using DataFrames
 using Distributions
+using StatsBase
 using Test
+using OmicsProfiles
 
 tests = [
     # "filter",
+    "qc",
     "highly_variable",
     "moments",
 ]

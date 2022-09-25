@@ -11,6 +11,10 @@ export
     filter_genes!,
     filter_genes,
 
+    # qc
+    quality_control_metrics!,
+    quality_control_metrics,
+
     # transform
     log1p!,
 
@@ -20,6 +24,7 @@ export
 
 include("utils.jl")
 include("filter.jl")
+include("qc.jl")
 include("transform.jl")
 include("highly_variable.jl")
 
