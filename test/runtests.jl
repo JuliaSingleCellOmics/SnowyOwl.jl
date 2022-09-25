@@ -2,7 +2,9 @@ using SnowyOwl
 using DataFrames
 using LinearAlgebra
 using SparseArrays
+using Statistics
 using Test
+using OmicsProfiles
 
 tests = [
     # "filter",

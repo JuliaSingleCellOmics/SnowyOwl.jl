@@ -2,6 +2,7 @@ module SnowyOwl
 
 using LinearAlgebra
 using SparseArrays
+using Statistics
 
 using CSV, DataFrames
 using CodecZlib, Mmap
@@ -28,7 +29,7 @@ export
 
     # qc
     quality_control_metrics!,
-    quality_control_metrics
+    quality_control_metrics,
 
     #moments
     normalize_indicator,
