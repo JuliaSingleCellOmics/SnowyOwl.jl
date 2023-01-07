@@ -1,6 +1,6 @@
 """
     quality_control_metrics(p; kwargs...)
-    quality_control_metrics(X, obs, var; obsname, varname, kwargs...)
+    quality_control_metrics(X, obs, var; obsindex, varindex, kwargs...)
 
 Calculate quality control metrics.
 
@@ -11,13 +11,13 @@ Calculate quality control metrics.
 - `obs::DataFrame`: The feature information matrix with cell information.
 - `var::DataFrame`: The feature information matrix with gene information.
 
-# Keyword arguments
+# Common Keyword arguments
 
-- `obsname::Symbol=:barcode`:
-- `varname::Symbol=:gene_symbols`:
-- `use_log1p::Bool`:
-- `qc_vars::AbstractVector{String}=["mt"]`:
-- `percent_top=nothing`:
+- `obsindex::Symbol=:barcode`: The index of dataframe `obs`.
+- `varindex::Symbol=:gene_symbols`: The index of dataframe `var`.
+- `use_log1p::Bool`: Computing log1p-transformed quality control metric.
+- `qc_vars::AbstractVector{String}=["mt"]`: The boolean mask for identifying variables you could calculate on.
+- `percent_top=nothing`: The proportions of top genes to calculate on.
 
 # Example
 
@@ -33,16 +33,16 @@ Calculate quality control metrics.
 
 # Arguments
 
-- `p::Profile`: The profile object to calculate on.
+- `p::AnnotatedProfile`: The profile object to calculate on.
 - `X::AbstractMatrix`: The count matrix to calculate on.
 - `obs::DataFrame`: The feature information matrix with cell information.
 - `var::DataFrame`: The feature information matrix with gene information.
 
-# Keyword arguments
+# Common Keyword arguments
 
-- `use_log1p::Bool`:
-- `qc_vars::AbstractVector{String}=["mt"]`:
-- `percent_top=nothing`:
+- `use_log1p::Bool`: Computing log1p-transformed quality control metric.
+- `qc_vars::AbstractVector{String}=["mt"]`: The boolean mask for identifying variables you could calculate on.
+- `percent_top=nothing`: The proportions of top genes to calculate on.
 
 # Example
 
@@ -54,8 +54,19 @@ function quality_control_metrics! end
 quality_control_metrics(p::AnnotatedProfile; kwargs...) = quality_control_metrics!(copy(p); kwargs...)
 
 function quality_control_metrics!(p::AnnotatedProfile; kwargs...)
-    describe_obs!(p.RNA.count, p.obs, p.RNA.var; kwargs...)
-    describe_var!(p.RNA.count, p.RNA.var; kwargs...)
+    omic = p.omics[:RNA]
+    obs_cols = obsnames(p)
+    var_cols = names(omic.var)
+
+    @info "Calculating quality control metrics:"
+    obs_result = describe_obs!(p.RNA.count, p.obs, p.RNA.var; kwargs...)
+    var_result = describe_var!(p.RNA.count, p.RNA.var; kwargs...)
+    @info "  => generated qc metrics for $(setdiff(names(obs_result), obs_cols)) on observations"
+    @info "  => generated qc metrics for $(setdiff(names(var_result), var_cols)) on features or variables"
+
+    # omic.pipeline[:qc] = Dict(:qc_vars => qc_vars)
+    @info "  => added :qc to pipeline in RNA"
+
     return p
 end
 
@@ -66,11 +77,11 @@ function quality_control_metrics!(X::AbstractMatrix, obs::DataFrame, var::DataFr
 end
 
 function quality_control_metrics(X::AbstractMatrix, obs::DataFrame, var::DataFrame;
-        obsname::Symbol=:barcode, varname::Symbol=:gene_symbols, kwargs...)
+    obsindex::Symbol=:barcode, varindex::Symbol=:gene_symbols, kwargs...)
     obs_metrics = DataFrame()
     var_metrics = DataFrame()
-    obs_metrics[!, obsname] = obs[!, obsname]
-    var_metrics[!, varname] = var[!, varname]
+    obs_metrics[!, obsindex] = obs[!, obsindex]
+    var_metrics[!, varindex] = var[!, varindex]
     describe_obs!(X, obs_metrics, var; kwargs...)
     describe_var!(X, var_metrics; kwargs...)
     return obs_metrics, var_metrics
