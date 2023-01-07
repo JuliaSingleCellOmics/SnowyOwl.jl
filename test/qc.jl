@@ -5,7 +5,7 @@
     var = DataFrame(index=1:r, C=rand(r), D=rand(r), mt=rand(Bool,r))
     prof = Profile(data, :RNA, var, obs, varindex=:index, obsindex=:index)
 
-    obs_metrics, var_metrics = SnowyOwl.Preprocess.quality_control_metrics(data, obs, var, obsname=:index, varname=:index, use_log1p=true)
+    obs_metrics, var_metrics = SnowyOwl.Preprocess.quality_control_metrics(data, obs, var, obsindex=:index, varindex=:index, use_log1p=true)
     @test obs_metrics[!, :n_genes_by_counts] == vec(count(data .!= 0, dims=1))
     @test obs_metrics[!, :total_counts] == vec(sum(data, dims=1))
     @test obs_metrics[!, :log1p_n_genes_by_counts] == vec(log1p.(count(data .!= 0, dims=1)))
