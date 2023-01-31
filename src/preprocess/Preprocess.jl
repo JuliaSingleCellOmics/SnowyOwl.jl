@@ -16,7 +16,8 @@ export
     quality_control_metrics,
 
     # transform
-    log1p!,
+    logarithmize,
+    logarithmize!,
 
     # highly_variable
     highly_variable_genes,
