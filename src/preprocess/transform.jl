@@ -64,9 +64,9 @@ function logarithmize!(p::AnnotatedProfile; omicsname::Symbol=:RNA, layer::Symbo
 
     @info "Logarithmizing $omicsname.$layer:"
     logarithmize!(X; kwargs...)
-    setlayer!(omic, layer, X)
     @info "  => calculated log1p for $layer"
 
+    base = haskey(kwargs, :base) ? kwargs[:base] : ℯ
     setpipeline!(omic, :log1p, Dict{Symbol,Any}(:base => base))
     @info "  => added :log1p to pipeline in $omicsname"
 

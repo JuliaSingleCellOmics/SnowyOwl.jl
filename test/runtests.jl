@@ -11,6 +11,7 @@ using OmicsProfiles
 tests = [
     # "filter",
     "qc",
+    "transform",
     "highly_variable",
     "moments",
 ]
