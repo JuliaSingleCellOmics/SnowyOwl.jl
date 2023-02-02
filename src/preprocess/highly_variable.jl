@@ -110,7 +110,7 @@ function highly_variable_genes(X::AbstractMatrix, var::DataFrame, method::Val;
                                varname::Symbol=:gene_symbols, kwargs...)
     df = DataFrame()
     df[!, varname] = var[!, varname]
-    return highly_variable_genes!(X, df, method; kwargs...)
+    return highly_variable_genes!(copy(X), df, method; kwargs...)
 end
 
 highly_variable_genes!(X::AbstractMatrix, var::DataFrame, method::Symbol; kwargs...) =
