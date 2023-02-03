@@ -7,6 +7,9 @@ using Distributions
 using StatsBase
 using Test
 using OmicsProfiles
+using Plots
+
+const TEST_PATH = @__DIR__
 
 tests = [
     # "filter",
@@ -14,6 +17,7 @@ tests = [
     "transform",
     "highly_variable",
     "moments",
+    "plots",
 ]
 
 @testset "SnowyOwl.jl" begin
