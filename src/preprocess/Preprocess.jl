@@ -16,6 +16,8 @@ export
     quality_control_metrics,
 
     # transform
+    normalize,
+    normalize!,
     logarithmize,
     logarithmize!,
 
