@@ -17,6 +17,7 @@ tests = [
     "transform",
     "highly_variable",
     "moments",
+    "project",
     "plots",
 ]
 
