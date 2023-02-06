@@ -28,3 +28,22 @@ struct CustomNormalization <: NormalizationMethod end
 Base.show(io::IO, ::CustomNormalization) = print(io, "custom normalization")
 
 Base.Symbol(::CustomNormalization) = :custom
+abstract type HighlyVariableMethod end
+
+struct CellRangerHVG <: HighlyVariableMethod end
+
+Base.show(io::IO, ::CellRangerHVG) = print(io, "cell ranger")
+
+Base.Symbol(::CellRangerHVG) = :cellranger
+
+struct SeuratHVG <: HighlyVariableMethod end
+
+Base.show(io::IO, ::SeuratHVG) = print(io, "seurat")
+
+Base.Symbol(::SeuratHVG) = :seurat
+
+struct Seuratv3HVG <: HighlyVariableMethod end
+
+Base.show(io::IO, ::Seuratv3HVG) = print(io, "seurat v3")
+
+Base.Symbol(::Seuratv3HVG) = :seuratv3
