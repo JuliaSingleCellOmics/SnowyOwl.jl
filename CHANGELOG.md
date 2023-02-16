@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.5]
+
+- support PBMC 3k dataset
+- support pca, umap analysis
+- support scatter, pca, umap plot
+- support logarithmize
+- support qc
+- move I/O to OmicsProfiles.jl
+
 ## [0.1.4]
 
 - bug fix
