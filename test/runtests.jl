@@ -11,7 +11,10 @@ using Plots
 
 const TEST_PATH = @__DIR__
 
+ENV["DATADEPS_ALWAYS_ACCEPT"] = true
+
 tests = [
+    "datasets",
     # "filter",
     "qc",
     "transform",
