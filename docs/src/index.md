@@ -22,6 +22,11 @@ SnowyOwl.Preprocess.filter_cells!
 ```
 
 ```@docs
+SnowyOwl.Preprocess.normalize
+SnowyOwl.Preprocess.normalize!
+```
+
+```@docs
 SnowyOwl.Preprocess.logarithmize
 SnowyOwl.Preprocess.logarithmize!
 ```

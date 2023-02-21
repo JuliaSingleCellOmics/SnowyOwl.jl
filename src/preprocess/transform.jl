@@ -8,8 +8,8 @@ Normalize counts per cell.
 
 - `prof::AnnotatedProfile`: The profile object to calculate on.
 - `X::AbstractMatrix`: The count matrix to calculate on.
-- `method`: Method to calculate highly variable genes, available for `:lognormalize`,
-    `:relative`, `:clr` and `:custom`.
+- `method`: Method to calculate highly variable genes, available for `LogNormalization`,
+    `RelativeNormalization`, `CenteredLogRatioNormalization` and `CustomNormalization`.
 
 # Specific keyword arguments
 
@@ -36,8 +36,8 @@ Normalize counts per cell.
 
 - `prof::AnnotatedProfile`: The profile object to calculate on.
 - `X::AbstractMatrix`: The count matrix to calculate on.
-- `method`: Method to calculate highly variable genes, available for `:lognormalize`,
-    `:relative`, `:clr` and `:custom`.
+- `method`: Method to calculate highly variable genes, available for `LogNormalization`,
+    `RelativeNormalization`, `CenteredLogRatioNormalization` and `CustomNormalization`.
 
 # Specific keyword arguments
 
@@ -54,52 +54,53 @@ See also [`normalize`](@ref) for non-inplace operation.
 """
 function normalize! end
 
-normalize(p::AnnotatedProfile, method::Symbol=:lognormalize; kwargs...) =
+normalize(p::AnnotatedProfile, method::NormalizationMethod=LogNormalization(); kwargs...) =
     normalize!(deepcopy(p), method; kwargs...)
 
-normalize(X::AbstractMatrix, method::Symbol; kwargs...) =
-    normalize(copy(X), Val(method); kwargs...)
+normalize(X::AbstractMatrix, method::NormalizationMethod; kwargs...) =
+    normalize!(copy(X), method; kwargs...)
 
-function normalize!(p::AnnotatedProfile, method::Symbol=:lognormalize;
+function normalize!(p::AnnotatedProfile, method::NormalizationMethod=LogNormalization();
                     omicsname::Symbol=:RNA, layer::Symbol=:count, kwargs...)
     omic = p.omics[omicsname]
     @assert haskey(omic.layers, layer) "$layer not found in layers."
     X = getlayer(omic, layer)
 
     @info "Normalizing $omicsname.$layer using $method method:"
-    normalize!(X, Val(method); kwargs...)
+    normalize!(X, method; kwargs...)
     @info "  => normalized $omicsname.$layer"
 
-    omic.pipeline[:normalize] = Dict(:method => method, :layer => layer)
+    setpipeline!(omic, :normalize, Dict(:method => Symbol(method), :layer => layer))
     @info "  => added :normalize to pipeline in $omicsname"
 
     return p
 end
 
-normalize!(X::AbstractMatrix, method::Symbol; kwargs...) =
-    normalize!(X, Val(method); kwargs...)
+normalize!(X::AbstractMatrix, method::NormalizationMethod; kwargs...) =
+    normalize!(X, method; kwargs...)
 
-function normalize!(X::AbstractMatrix, method::Val{:lognormalize}; scaled_size::Real=1e4)
-    colsums = sum(X, dims=1)
-    X .= @. log1p(X) / colsums * scaled_size
+function normalize!(X::AbstractMatrix, ::LogNormalization; scaled_size::Real=1e4)
+    factors = scaled_size ./ sum(X, dims=1)
+    X .= @. log1p(X * factors)
     return X
 end
 
-"""
-Normalize count data to relative counts per cell by dividing by the total counts per cell.
-"""
-function normalize!(X::AbstractMatrix, method::Val{:relative}; scaled_size::Real=1e4)
-    X .= @. X / sum(X, dims=1) * scaled_size
+function normalize!(X::AbstractMatrix, ::RelativeNormalization; scaled_size::Real=1e4)
+    factors = scaled_size ./ sum(X, dims=1)
+    X .*= factors
     return X
 end
 
-# function normalize!(X::AbstractMatrix, method::Val{:clr}; scaled_size::Real=1e4, dims::Int=1)
+function normalize!(X::AbstractMatrix, ::CenteredLogRatioNormalization)
+    factor = sum(log1p.(X[X .> 0])) / length(X)
+    X .= @. log1p(X / exp(factor))
+    return X
+end
 
-# end
-
-# function normalize!(X::AbstractMatrix, method::Val{:custom}; scaled_size::Real=1e4, dims::Int=1)
-
-# end
+function normalize!(X::AbstractMatrix, ::CustomNormalization; scaled_size::Real=1e4,
+                    dims::Int=1)
+    error("This method is not implemented.")
+end
 
 """
     logarithmize(prof; omicsname=:RNA, layer=:count, kwargs...)
