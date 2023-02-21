@@ -11,8 +11,8 @@ which selects highly variable genes from given gene set. Additional information 
 - `prof::AnnotatedProfile`: The profile object to calculate on.
 - `X::AbstractMatrix`: The count matrix to calculate on.
 - `var::DataFrame`: The feature information matrix with gene information.
-- `method::Symbol`: Method to calculate highly variable genes, available for `:cellranger`,
-    `:seurat` and `:seuratv3`.
+- `method::HighlyVariableMethod`: Method to calculate highly variable genes, available for
+    `CellRangerHVG`, `SeuratHVG` and `Seuratv3HVG`.
 
 # Specific keyword arguments
 
@@ -23,15 +23,15 @@ which selects highly variable genes from given gene set. Additional information 
 # Common keyword arguments
 
 - `ntop_genes::Int=-1`: Number of top variable genes to be selected. Specify `-1` to switch
-    to selection by mean and dispersion. Available for `:cellranger` and `:seurat` methods.
+    to selection by mean and dispersion. Available for `CellRangerHVG` and `SeuratHVG` methods.
 - `min_disp::Real=0.5`: Minimum dispersion for selecting highly variable genes. Available
-    for `:cellranger` and `:seurat` methods.
+    for `CellRangerHVG` and `SeuratHVG` methods.
 - `max_disp::Real=Inf`: Maximum dispersion for selecting highly variable genes. Available
-    for `:cellranger` and `:seurat` methods.
+    for `CellRangerHVG` and `SeuratHVG` methods.
 - `min_mean::Real=0.0125`: Minimum mean for selecting highly variable genes. Available for
-    `:cellranger` and `:seurat` methods.
+    `CellRangerHVG` and `SeuratHVG` methods.
 - `max_mean::Real=3.`: Maximum mean for selecting highly variable genes. Available for
-    `:cellranger` and `:seurat` methods.
+    `CellRangerHVG` and `SeuratHVG` methods.
 
 # Examples
 
@@ -52,8 +52,8 @@ which selects highly variable genes from given gene set. Additional information 
 - `prof::AnnotatedProfile`: The profile object to calculate on.
 - `X::AbstractMatrix`: The count matrix to calculate on.
 - `var::DataFrame`: The feature information matrix with gene information.
-- `method`: Method to calculate highly variable genes, available for `:cellranger`,
-    `:seurat` and `:seuratv3`.
+- `method`: Method to calculate highly variable genes, available for `CellRangerHVG`,
+    `SeuratHVG` and `Seuratv3HVG`.
 
 # Specific keyword arguments
 
@@ -63,15 +63,15 @@ which selects highly variable genes from given gene set. Additional information 
 # Common keyword arguments
 
 - `ntop_genes::Int=-1`: Number of top variable genes to be selected. Specify `-1` to switch
-    to selection by mean and dispersion. Available for `:cellranger` and `:seurat` methods.
+    to selection by mean and dispersion. Available for `CellRangerHVG` and `SeuratHVG` methods.
 - `min_disp::Real=0.5`: Minimum dispersion for selecting highly variable genes. Available
-    for `:cellranger` and `:seurat` methods.
+    for `CellRangerHVG` and `SeuratHVG` methods.
 - `max_disp::Real=Inf`: Maximum dispersion for selecting highly variable genes. Available
-    for `:cellranger` and `:seurat` methods.
+    for `CellRangerHVG` and `SeuratHVG` methods.
 - `min_mean::Real=0.0125`: Minimum mean for selecting highly variable genes. Available for
-    `:cellranger` and `:seurat` methods.
+    `CellRangerHVG` and `SeuratHVG` methods.
 - `max_mean::Real=3.`: Maximum mean for selecting highly variable genes. Available for
-    `:cellranger` and `:seurat` methods.
+    `CellRangerHVG` and `SeuratHVG` methods.
 
 # Examples
 
@@ -80,43 +80,43 @@ See also [`highly_variable_genes`](@ref) for non-inplace operation.
 function highly_variable_genes! end
 
 
-highly_variable_genes(p::AnnotatedProfile, method::Symbol=:seuratv3; kwargs...) =
-    highly_variable_genes!(copy(p), method; kwargs...)
+highly_variable_genes(p::AnnotatedProfile, method::HighlyVariableMethod=Seuratv3HVG(); kwargs...) =
+    highly_variable_genes!(deepcopy(p), method; kwargs...)
 
-function highly_variable_genes!(p::AnnotatedProfile, method::Symbol=:seuratv3;
+function highly_variable_genes!(p::AnnotatedProfile, method::HighlyVariableMethod=Seuratv3HVG();
                                 omicsname::Symbol=:RNA, layer::Symbol=:count, kwargs...)
     omic = p.omics[omicsname]
     @assert haskey(omic.layers, layer) "$layer not found in layers."
     X = getlayer(omic, layer)
-    if method == :seurat && haskey(omic.pipeline, :log1p)
+    if method isa SeuratHVG && haskey(omic.pipeline, :log1p)
         X .*= log(omic.pipeline[:log1p][:base])
     end
 
     @info "Calculating highly variable genes using $method method over $omicsname.$layer:"
     cols = names(omic.var)
-    hvg_result = highly_variable_genes!(X, omic.var, Val(method); kwargs...)
+    hvg_result = highly_variable_genes!(X, omic.var, method; kwargs...)
     @info "  => generated statistics for $(setdiff(names(hvg_result), cols))"
 
-    omic.pipeline[:hvg] = Dict(:method => method, :layer => layer)
+    omic.pipeline[:hvg] = Dict(:method => Symbol(method), :layer => layer)
     @info "  => added :hvg to pipeline in $omicsname"
 
     return p
 end
 
-highly_variable_genes(X::AbstractMatrix, var::DataFrame, method::Symbol; kwargs...) =
-    highly_variable_genes(X, var, Val(method); kwargs...)
-
-function highly_variable_genes(X::AbstractMatrix, var::DataFrame, method::Val;
+function highly_variable_genes(X::AbstractMatrix, var::DataFrame, method::HighlyVariableMethod;
                                varname::Symbol=:gene_symbols, kwargs...)
     df = DataFrame()
     df[!, varname] = var[!, varname]
     return highly_variable_genes!(copy(X), df, method; kwargs...)
 end
 
-highly_variable_genes!(X::AbstractMatrix, var::DataFrame, method::Symbol; kwargs...) =
-    highly_variable_genes!(X, var, Val(method); kwargs...)
 
-function highly_variable_genes!(X::AbstractMatrix, var::DataFrame, method::Val{:seurat};
+function highly_variable_genes!(df::DataFrame, X::AbstractMatrix, ::Seuratv3HVG;
+        ntop_genes::Integer=2000, span::Real=0.3, check_values::Bool=true)
+    error("This method is not implemented.")
+end
+
+function highly_variable_genes!(X::AbstractMatrix, var::DataFrame, ::SeuratHVG;
     ntop_genes::Int=-1, min_disp=0.5, max_disp=Inf, min_mean=0.0125, max_mean=3.,
     nbins::Int=20)
     X = expm1.(X)
@@ -158,7 +158,7 @@ function highly_variable_genes!(X::AbstractMatrix, var::DataFrame, method::Val{:
     return var
 end
 
-function highly_variable_genes!(X::AbstractMatrix, var::DataFrame, method::Val{:cellranger};
+function highly_variable_genes!(X::AbstractMatrix, var::DataFrame, ::CellRangerHVG;
     ntop_genes::Int=-1, min_disp=0.5, max_disp=Inf, min_mean=0.0125, max_mean=3.)
     μ, σ² = mean_and_var(X, 2, corrected=true)
     μ, σ² = vec(μ), vec(σ²)

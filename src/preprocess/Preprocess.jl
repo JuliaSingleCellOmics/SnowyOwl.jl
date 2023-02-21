@@ -27,6 +27,10 @@ export
     logarithmize!,
 
     # highly_variable
+    HighlyVariableMethod,
+    CellRangerHVG,
+    SeuratHVG,
+    Seuratv3HVG,
     highly_variable_genes,
     highly_variable_genes!
 

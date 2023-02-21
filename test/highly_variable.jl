@@ -6,7 +6,8 @@
 
     min_disp, max_disp = 0.5, Inf
     min_mean, max_mean = 0.0125, 3.
-    hvg = SnowyOwl.Preprocess.highly_variable_genes(X, var, :seurat; varname=:gene_symbols,
+    hvg = SnowyOwl.Preprocess.highly_variable_genes(X, var, SnowyOwl.Preprocess.SeuratHVG();
+                                                    varname=:gene_symbols,
                                                     min_disp=min_disp, max_disp=max_disp,
                                                     min_mean=min_mean, max_mean=max_mean)
     top_genes = (min_mean .< hvg.means .< max_mean) .&
@@ -15,7 +16,7 @@
                          "highly_variable"]
     @test all(top_genes .== hvg.highly_variable)
 
-    SnowyOwl.Preprocess.highly_variable_genes!(X, var, :cellranger; ntop_genes=nhvgs)
+    SnowyOwl.Preprocess.highly_variable_genes!(X, var, SnowyOwl.Preprocess.CellRangerHVG(); ntop_genes=nhvgs)
     @test names(var) == ["gene_symbols", "A", "means", "dispersions", "dispersions_norm",
                          "highly_variable"]
     @test count(var.highly_variable) == nhvgs
@@ -24,7 +25,8 @@
     var = DataFrame(gene_symbols=1:ngenes, A=rand(ngenes))
 
     prof = Profile(X, :RNA, var, obs; varindex=:gene_symbols, obsindex=:barcode)
-    prof2 = SnowyOwl.Preprocess.highly_variable_genes(prof, :cellranger; layer=:count,
+    prof2 = SnowyOwl.Preprocess.highly_variable_genes(prof, SnowyOwl.Preprocess.CellRangerHVG();
+                                                      layer=:count,
                                                       min_disp=min_disp, max_disp=max_disp,
                                                       min_mean=min_mean, max_mean=max_mean)
     top_genes = (min_mean .< prof2.RNA.var.means .< max_mean) .&
@@ -33,8 +35,8 @@
                                    "dispersions_norm", "highly_variable"]
     @test all(top_genes .== prof2.RNA.var.highly_variable)
 
-    SnowyOwl.Preprocess.highly_variable_genes!(prof, :seurat; omicsname=:RNA, layer=:count,
-                                               ntop_genes=nhvgs)
+    SnowyOwl.Preprocess.highly_variable_genes!(prof, SnowyOwl.Preprocess.SeuratHVG(); omicsname=:RNA,
+                                               layer=:count, ntop_genes=nhvgs)
     @test names(prof.RNA.var) == ["gene_symbols", "A", "means", "dispersions",
                                   "dispersions_norm", "highly_variable"]
     @test count(prof.RNA.var.highly_variable) == nhvgs
