@@ -16,6 +16,13 @@ export
     quality_control_metrics,
 
     # transform
+    NormalizationMethod,
+    LogNormalization,
+    RelativeNormalization,
+    CenteredLogRatioNormalization,
+    CustomNormalization,
+    normalize,
+    normalize!,
     logarithmize,
     logarithmize!,
 
@@ -23,6 +30,7 @@ export
     highly_variable_genes,
     highly_variable_genes!
 
+include("methodtype.jl")
 include("utils.jl")
 include("filter.jl")
 include("qc.jl")
