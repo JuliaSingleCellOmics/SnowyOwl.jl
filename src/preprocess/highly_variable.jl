@@ -81,7 +81,7 @@ function highly_variable_genes! end
 
 
 highly_variable_genes(p::AnnotatedProfile, method::HighlyVariableMethod=Seuratv3HVG(); kwargs...) =
-    highly_variable_genes!(copy(p), method; kwargs...)
+    highly_variable_genes!(deepcopy(p), method; kwargs...)
 
 function highly_variable_genes!(p::AnnotatedProfile, method::HighlyVariableMethod=Seuratv3HVG();
                                 omicsname::Symbol=:RNA, layer::Symbol=:count, kwargs...)
@@ -108,6 +108,12 @@ function highly_variable_genes(X::AbstractMatrix, var::DataFrame, method::Highly
     df = DataFrame()
     df[!, varname] = var[!, varname]
     return highly_variable_genes!(copy(X), df, method; kwargs...)
+end
+
+
+function highly_variable_genes!(df::DataFrame, X::AbstractMatrix, ::Seuratv3HVG;
+        ntop_genes::Integer=2000, span::Real=0.3, check_values::Bool=true)
+    error("This method is not implemented.")
 end
 
 function highly_variable_genes!(X::AbstractMatrix, var::DataFrame, ::SeuratHVG;
