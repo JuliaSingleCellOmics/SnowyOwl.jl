@@ -28,6 +28,7 @@ struct CustomNormalization <: NormalizationMethod end
 Base.show(io::IO, ::CustomNormalization) = print(io, "custom normalization")
 
 Base.Symbol(::CustomNormalization) = :custom
+
 abstract type HighlyVariableMethod end
 
 """

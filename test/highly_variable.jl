@@ -1,7 +1,7 @@
 @testset "highly_variable" begin
     ngenes, ncells = (100, 500)
     nhvgs = 10
-    X = rand(NegativeBinomial(1, 0.8), ngenes, ncells)
+    X = Float64.(rand(NegativeBinomial(1, 0.8), ngenes, ncells))
     var = DataFrame(gene_symbols=1:ngenes, A=rand(ngenes))
 
     min_disp, max_disp = 0.5, Inf

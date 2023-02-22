@@ -116,23 +116,24 @@ function highly_variable_genes!(df::DataFrame, X::AbstractMatrix, ::Seuratv3HVG;
     error("This method is not implemented.")
 end
 
-function highly_variable_genes!(X::AbstractMatrix, var::DataFrame, ::SeuratHVG;
+function highly_variable_genes!(X::AbstractMatrix{T}, var::DataFrame, ::SeuratHVG;
     ntop_genes::Int=-1, min_disp=0.5, max_disp=Inf, min_mean=0.0125, max_mean=3.,
-    nbins::Int=20)
+    nbins::Int=20) where {T}
     X = expm1.(X)
     μ, σ² = mean_and_var(X, 2, corrected=true)
     μ, σ² = vec(μ), vec(σ²)
 
     # compute dispersion
-    replace!(μ, 0. => 1e-12)
-    dispersion = replace!(σ² ./ μ, 0. => NaN)
+    μ[μ .== 0.] .= T(1e-12)
+    dispersion = σ² ./ μ
+    dispersion[dispersion .== 0.] .= T(NaN)
     dispersion .= log.(dispersion)
     μ .= log1p.(μ)
 
-    var[!, :means] = μ
-    var[!, :dispersions] = dispersion
-    h = fit(Histogram, μ; nbins=nbins)
-    var[!, :mean_bin] = map(x -> StatsBase.binindex(h, x), μ)
+    var[!, :means] = collect(μ)
+    var[!, :dispersions] = collect(dispersion)
+    h = fit(Histogram, var[!, :means]; nbins=nbins)
+    var[!, :mean_bin] = map(x -> StatsBase.binindex(h, x), var[!, :means])
     gdf = groupby(var, :mean_bin)
     disp_bin = combine(gdf, [:dispersions => mean, :dispersions => std])
     disp_bin = fill_missing_bins(disp_bin, :mean_bin, :dispersions_mean => 0,
@@ -152,26 +153,26 @@ function highly_variable_genes!(X::AbstractMatrix, var::DataFrame, ::SeuratHVG;
                           disp_bin.dispersions_std, var.mean_bin)
     var[!, :dispersions_norm] = disp_norm
 
-    var[!, :highly_variable] = select_ntop_genes(μ, disp_norm, ntop_genes, nrow(var),
-        min_mean, max_mean, min_disp, max_disp)
+    var[!, :highly_variable] = select_ntop_genes(var[!, :means], disp_norm, ntop_genes,
+        nrow(var), min_mean, max_mean, min_disp, max_disp)
     select!(var, Not(:mean_bin))
     return var
 end
 
-function highly_variable_genes!(X::AbstractMatrix, var::DataFrame, ::CellRangerHVG;
-    ntop_genes::Int=-1, min_disp=0.5, max_disp=Inf, min_mean=0.0125, max_mean=3.)
+function highly_variable_genes!(X::AbstractMatrix{T}, var::DataFrame, ::CellRangerHVG;
+    ntop_genes::Int=-1, min_disp=0.5, max_disp=Inf, min_mean=0.0125, max_mean=3.) where {T}
     μ, σ² = mean_and_var(X, 2, corrected=true)
     μ, σ² = vec(μ), vec(σ²)
 
     # compute dispersion
-    replace!(μ, 0. => 1e-12)
+    μ[μ .== 0.] .= T(1e-12)
     dispersion = σ² ./ μ
 
-    var[!, :means] = μ
-    var[!, :dispersions] = dispersion
-    bins = [-Inf, percentile(μ, 10:5:100)..., Inf]
-    h = fit(Histogram, μ, bins)
-    var[!, :mean_bin] = map(x -> StatsBase.binindex(h, x), μ)
+    var[!, :means] = collect(μ)
+    var[!, :dispersions] = collect(dispersion)
+    bins = [-Inf, percentile(var[!, :means], 10:5:100)..., Inf]
+    h = fit(Histogram, var[!, :means], bins)
+    var[!, :mean_bin] = map(x -> StatsBase.binindex(h, x), var[!, :means])
     gdf = groupby(var, :mean_bin)
     disp_bin = combine(gdf, [:dispersions => median, :dispersions => mad])
     disp_bin = fill_missing_bins(disp_bin, :mean_bin, :dispersions_median => 0,
@@ -181,8 +182,8 @@ function highly_variable_genes!(X::AbstractMatrix, var::DataFrame, ::CellRangerH
                                         disp_bin.dispersions_mad, var.mean_bin)
     var[!, :dispersions_norm] = disp_norm
 
-    var[!, :highly_variable] = select_ntop_genes(μ, disp_norm, ntop_genes, nrow(var),
-        min_mean, max_mean, min_disp, max_disp)
+    var[!, :highly_variable] = select_ntop_genes(var[!, :means], disp_norm, ntop_genes,
+        nrow(var), min_mean, max_mean, min_disp, max_disp)
     select!(var, Not(:mean_bin))
     return var
 end
