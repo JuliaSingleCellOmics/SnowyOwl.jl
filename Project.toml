@@ -1,7 +1,7 @@
 name = "SnowyOwl"
 uuid = "c5d12a1c-ebca-44e1-aaa9-03f0dbaa929f"
 authors = ["Yueh-Hua Tu <a504082002@gmail.com>"]
-version = "0.1.6"
+version = "0.1.7"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"

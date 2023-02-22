@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.7]
+
+- support relative, lognormalize and clr normalization with their method types `HighlyVariableMethod`
+- support normalize, logarithmize and highly variable calculation on cuda
+
 ## [0.1.6]
 
 - fix doc
