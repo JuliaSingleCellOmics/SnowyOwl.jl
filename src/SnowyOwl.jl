@@ -2,6 +2,7 @@ module SnowyOwl
 
 using Reexport
 
+include("utils.jl")
 include("datasets.jl")
 include("preprocess/Preprocess.jl")
 include("analysis/Analysis.jl")
