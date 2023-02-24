@@ -18,6 +18,7 @@ cuda_tests = [
 ]
 
 tests = [
+    "utils",
     "datasets",
     # "filter",
     "qc",
